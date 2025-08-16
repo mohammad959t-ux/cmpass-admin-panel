@@ -1,0 +1,36 @@
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+
+import Dashboard from './pages/Dashboard';
+import Users from './pages/Users';
+import Services from './pages/Services';
+import Orders from './pages/Orders';
+import Banners from './pages/Banners';
+import Analytics from './pages/Analytics';
+import Login from './pages/Login';
+
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminLayout from './components/AdminLayout';
+
+const App = () => {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AdminLayout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/banners" element={<Banners />} />
+          <Route path="/analytics" element={<Analytics />} />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
+  );
+};
+
+export default App;
