@@ -19,7 +19,8 @@ const Orders = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await API.get('/orders/recent');
+      // FIX: إضافة '/api' للمسار
+      const res = await API.get('/api/orders/recent');
       setOrders(res.data);
       setFilteredOrders(res.data);
     } catch (err) {
@@ -36,9 +37,9 @@ const Orders = () => {
       const term = searchTerm.toLowerCase();
       tempOrders = tempOrders.filter(
         o => (o.userName && o.userName.toLowerCase().includes(term)) ||
-             (o.serviceName && o.serviceName.toLowerCase().includes(term)) ||
-             (o.clientName && o.clientName.toLowerCase().includes(term)) ||
-             (o.clientPhone && o.clientPhone.includes(term))
+              (o.serviceName && o.serviceName.toLowerCase().includes(term)) ||
+              (o.clientName && o.clientName.toLowerCase().includes(term)) ||
+              (o.clientPhone && o.clientPhone.includes(term))
       );
     }
     setFilteredOrders(tempOrders);
@@ -57,7 +58,8 @@ const Orders = () => {
   const handleStatusChange = async (orderId, newStatus) => {
     setLoadingUpdate(prev => ({ ...prev, [orderId]: true }));
     try {
-      await API.put(`/orders/${orderId}/status`, { status: newStatus });
+      // FIX: إضافة '/api' للمسار
+      await API.put(`/api/orders/${orderId}/status`, { status: newStatus });
       setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
     } catch (err) {
       console.error('Failed to update order status:', err);
@@ -68,7 +70,8 @@ const Orders = () => {
 
   const handleManualSubmit = async () => {
     try {
-      await API.post('/orders/manual', manualData);
+      // FIX: إضافة '/api' للمسار
+      await API.post('/api/orders/manual', manualData);
       setManualDialogOpen(false);
       setManualData({ userId: '', serviceId: '', quantity: 1, customPrice: '', expectedCompletion: '', clientName: '', clientPhone: '', description: '' });
       fetchOrders();
