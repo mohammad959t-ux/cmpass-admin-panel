@@ -24,7 +24,8 @@ const Users = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await API.get('/users');
+      // FIX: إضافة '/api' للمسار
+      const res = await API.get('/api/users');
       setUsers(res.data);
     } catch (err) {
       console.error(err);
@@ -38,7 +39,8 @@ const Users = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
-      await API.delete(`/users/${id}`);
+      // FIX: إضافة '/api' للمسار
+      await API.delete(`/api/users/${id}`);
       setUsers(users.filter(u => u._id !== id));
     } catch (err) {
       console.error(err);
@@ -54,7 +56,8 @@ const Users = () => {
 
   const handleSubmitTopUp = async () => {
     try {
-      await API.post('/users/add-balance', { userId: selectedUser._id, amount: Number(topUpAmount) });
+      // FIX: إضافة '/api' للمسار
+      await API.post('/api/users/add-balance', { userId: selectedUser._id, amount: Number(topUpAmount) });
       setUsers(users.map(u => u._id === selectedUser._id ? { ...u, balance: u.balance + Number(topUpAmount) } : u));
       handleCloseTopUp();
     } catch (err) {
@@ -75,7 +78,8 @@ const Users = () => {
       if (editEmail) payload.email = editEmail;
       if (editPassword) payload.password = editPassword;
 
-      const res = await API.put(`/users/${selectedUser._id}`, payload);
+      // FIX: إضافة '/api' للمسار
+      const res = await API.put(`/api/users/${selectedUser._id}`, payload);
       setUsers(users.map(u => u._id === selectedUser._id ? res.data : u));
       setEditEmail('');
       setEditPassword('');
