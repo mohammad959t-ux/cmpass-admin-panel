@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// تم إزالة متغيرات البيئة واستخدام الرابط الثابت مباشرةً لضمان عمل التطبيق على Vercel
+// تم إزالة متغيرات البيئة واستخدام الرابط الثابت مباشرةً لضمان عمل التطبيق
 const baseURL = 'https://compass-backend-87n1.onrender.com';
 
 const API = axios.create({
