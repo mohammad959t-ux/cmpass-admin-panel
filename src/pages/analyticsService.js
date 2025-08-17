@@ -21,7 +21,8 @@ export const fetchTotalIncome = async (filters = {}) => {
     if (currency) params.append('currency', currency);
     if (expenseType) params.append('expenseType', expenseType);
 
-    const res = await API.get(`/analytics/income?${params.toString()}`);
+    // CRITICAL FIX: The path must start with '/api' to match the backend's route.
+    const res = await API.get(`/api/analytics/income?${params.toString()}`);
     return res.data;
   } catch (error) {
     console.error('Error fetching analytics data:', error);
