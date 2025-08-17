@@ -21,7 +21,8 @@ const Expenses = () => {
   // Fetch expenses from the API
   const fetchExpenses = async () => {
     try {
-      const { data } = await API.get("/expenses");
+      // FIX: إضافة '/api' للمسار
+      const { data } = await API.get("/api/expenses");
       setExpenses(data);
     } catch (err) {
       console.error(err);
@@ -60,9 +61,11 @@ const Expenses = () => {
   const handleSubmit = async () => {
     try {
       if (editingExpense) {
-        await API.put(`/expenses/${editingExpense._id}`, formData);
+        // FIX: إضافة '/api' للمسار
+        await API.put(`/api/expenses/${editingExpense._id}`, formData);
       } else {
-        await API.post("/expenses", formData);
+        // FIX: إضافة '/api' للمسار
+        await API.post("/api/expenses", formData);
       }
       fetchExpenses();
       handleClose();
@@ -75,7 +78,8 @@ const Expenses = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this expense?")) {
       try {
-        await API.delete(`/expenses/${id}`);
+        // FIX: إضافة '/api' للمسار
+        await API.delete(`/api/expenses/${id}`);
         fetchExpenses();
       } catch (err) {
         console.error(err);
