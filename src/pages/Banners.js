@@ -16,7 +16,8 @@ const Banners = () => {
 
   const fetchBanners = async () => {
     try {
-      const res = await API.get('/banners');
+      // FIX: إضافة '/api' للمسار
+      const res = await API.get('/api/banners');
       setBanners(res.data);
     } catch (err) {
       console.error(err);
@@ -30,7 +31,8 @@ const Banners = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this banner?')) return;
     try {
-      await API.delete(`/banners/${id}`);
+      // FIX: إضافة '/api' للمسار
+      await API.delete(`/api/banners/${id}`);
       setBanners(banners.filter(b => b._id !== id));
     } catch (err) {
       console.error(err);
@@ -39,7 +41,8 @@ const Banners = () => {
 
   const handleToggle = async (id) => {
     try {
-      const res = await API.patch(`/banners/${id}/toggle`);
+      // FIX: إضافة '/api' للمسار
+      const res = await API.patch(`/api/banners/${id}/toggle`);
       setBanners(banners.map(b => b._id === id ? res.data : b));
     } catch (err) {
       console.error(err);
@@ -65,7 +68,8 @@ const Banners = () => {
     if (imageFile) formData.append('image', imageFile);
 
     try {
-      const res = await API.put(`/banners/${currentBanner._id}`, formData, {
+      // FIX: إضافة '/api' للمسار
+      const res = await API.put(`/api/banners/${currentBanner._id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setBanners(banners.map(b => b._id === currentBanner._id ? res.data : b));
