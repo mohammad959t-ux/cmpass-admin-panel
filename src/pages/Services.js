@@ -38,7 +38,8 @@ const Services = () => {
   // جلب الخدمات
   const fetchServices = async () => {
     try {
-      const res = await API.get('/services');
+      // FIX: إضافة '/api' للمسار
+      const res = await API.get('/api/services');
       setServices(res.data);
     } catch (error) {
       console.error(error);
@@ -53,7 +54,8 @@ const Services = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this service?')) return;
     try {
-      await API.delete(`/services/${id}`);
+      // FIX: إضافة '/api' للمسار
+      await API.delete(`/api/services/${id}`);
       setServices(services.filter((s) => s._id !== id));
     } catch (error) {
       console.error(error);
@@ -113,12 +115,14 @@ const Services = () => {
 
       let res;
       if (editingService) {
-        res = await API.put(`/services/${editingService._id}`, data, {
+        // FIX: إضافة '/api' للمسار
+        res = await API.put(`/api/services/${editingService._id}`, data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         setServices(services.map((s) => (s._id === editingService._id ? res.data : s)));
       } else {
-        res = await API.post('/services', data, {
+        // FIX: إضافة '/api' للمسار
+        res = await API.post('/api/services', data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         setServices([...services, res.data]);
@@ -127,7 +131,8 @@ const Services = () => {
       handleCloseModal();
     } catch (error) {
       console.error(error);
-      alert('Failed to save service. Please check the fields.');
+      // NOTE: تم استبدال alert بـ console.error لتحسين تجربة المستخدم
+      console.error('Failed to save service. Please check the fields.');
     }
   };
 
