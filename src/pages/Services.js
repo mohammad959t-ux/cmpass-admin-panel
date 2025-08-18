@@ -16,6 +16,7 @@ const Services = () => {
     name: '',
     description: '',
     category: '',
+    subCategory: '', // ✅ حقل جديد
     apiServiceId: '',
     price: '',
     costPrice: '',
@@ -56,6 +57,10 @@ const Services = () => {
         name: service.name,
         description: service.description,
         category: service.category,
+<<<<<<< Updated upstream
+=======
+        subCategory: service.subCategory || '', // ✅ تعبئة الحقل الجديد
+>>>>>>> Stashed changes
         apiServiceId: service.apiServiceId || '',
         price: service.price || '',
         costPrice: service.costPrice || '',
@@ -68,6 +73,7 @@ const Services = () => {
         name: '',
         description: '',
         category: '',
+        subCategory: '', // ✅ حقل جديد
         apiServiceId: '',
         price: '',
         costPrice: '',
@@ -96,6 +102,10 @@ const Services = () => {
       data.append('name', formData.name);
       data.append('description', formData.description);
       data.append('category', formData.category);
+<<<<<<< Updated upstream
+=======
+      data.append('subCategory', formData.subCategory); // ✅ إرسال الحقل الجديد
+>>>>>>> Stashed changes
       if (formData.apiServiceId) data.append('apiServiceId', formData.apiServiceId);
       if (formData.price !== '') data.append('price', formData.price);
       if (formData.costPrice !== '') data.append('costPrice', formData.costPrice);
@@ -138,6 +148,7 @@ const Services = () => {
               <TableCell>Name</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Category</TableCell>
+              <TableCell>Sub Category</TableCell> {/* ✅ عمود جديد */}
               <TableCell>API Service ID</TableCell>
               <TableCell>Price</TableCell>
               <TableCell>Cost Price</TableCell>
@@ -152,6 +163,10 @@ const Services = () => {
                 <TableCell>{service.name}</TableCell>
                 <TableCell>{service.description}</TableCell>
                 <TableCell>{service.category}</TableCell>
+<<<<<<< Updated upstream
+=======
+                <TableCell>{service.subCategory || ''}</TableCell> {/* ✅ عرض الحقل الجديد */}
+>>>>>>> Stashed changes
                 <TableCell>{service.apiServiceId || ''}</TableCell>
                 <TableCell>{service.price !== undefined ? `$${service.price}` : ''}</TableCell>
                 <TableCell>{service.costPrice !== undefined ? `$${service.costPrice}` : ''}</TableCell>
@@ -172,6 +187,10 @@ const Services = () => {
           <TextField margin="dense" label="Name" name="name" fullWidth value={formData.name} onChange={handleChange} />
           <TextField margin="dense" label="Description" name="description" fullWidth value={formData.description} onChange={handleChange} />
           <TextField margin="dense" label="Category" name="category" fullWidth value={formData.category} onChange={handleChange} />
+<<<<<<< Updated upstream
+=======
+          <TextField margin="dense" label="Sub Category" name="subCategory" fullWidth value={formData.subCategory} onChange={handleChange} /> {/* ✅ حقل جديد */}
+>>>>>>> Stashed changes
           <TextField margin="dense" label="API Service ID (optional)" name="apiServiceId" fullWidth value={formData.apiServiceId} onChange={handleChange} />
           <TextField margin="dense" label="Price (optional)" name="price" type="number" fullWidth value={formData.price} onChange={handleChange} />
           <TextField margin="dense" label="Cost Price (optional)" name="costPrice" type="number" fullWidth value={formData.costPrice} onChange={handleChange} />
