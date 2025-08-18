@@ -1,22 +1,9 @@
 // src/pages/Services.js
 import React, { useEffect, useState } from 'react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Typography,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Box
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+  IconButton, Typography, Button, Dialog, DialogTitle, DialogContent,
+  DialogActions, TextField, Box
 } from '@mui/material';
 import { Delete, Edit, Add } from '@mui/icons-material';
 import API from '../api/axios';
@@ -31,6 +18,7 @@ const Services = () => {
     category: '',
     apiServiceId: '',
     price: '',
+    costPrice: '',
     stock: '',
     imageFile: null,
   });
@@ -38,7 +26,6 @@ const Services = () => {
   // جلب الخدمات
   const fetchServices = async () => {
     try {
-      // FIX: إضافة '/api' للمسار
       const res = await API.get('/api/services');
       setServices(res.data);
     } catch (error) {
@@ -54,7 +41,6 @@ const Services = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this service?')) return;
     try {
-      // FIX: إضافة '/api' للمسار
       await API.delete(`/api/services/${id}`);
       setServices(services.filter((s) => s._id !== id));
     } catch (error) {
@@ -62,7 +48,7 @@ const Services = () => {
     }
   };
 
-  // فتح/إغلاق مودال
+  // فتح/إغلاق المودال
   const handleOpenModal = (service = null) => {
     if (service) {
       setEditingService(service);
@@ -70,8 +56,9 @@ const Services = () => {
         name: service.name,
         description: service.description,
         category: service.category,
-        apiServiceId: service.apiServiceId,
+        apiServiceId: service.apiServiceId || '',
         price: service.price || '',
+        costPrice: service.costPrice || '',
         stock: service.stock || '',
         imageFile: null,
       });
@@ -83,6 +70,7 @@ const Services = () => {
         category: '',
         apiServiceId: '',
         price: '',
+        costPrice: '',
         stock: '',
         imageFile: null,
       });
@@ -108,20 +96,19 @@ const Services = () => {
       data.append('name', formData.name);
       data.append('description', formData.description);
       data.append('category', formData.category);
-      data.append('apiServiceId', formData.apiServiceId);
+      if (formData.apiServiceId) data.append('apiServiceId', formData.apiServiceId);
       if (formData.price !== '') data.append('price', formData.price);
+      if (formData.costPrice !== '') data.append('costPrice', formData.costPrice);
       if (formData.stock !== '') data.append('stock', formData.stock);
       if (formData.imageFile) data.append('image', formData.imageFile);
 
       let res;
       if (editingService) {
-        // FIX: إضافة '/api' للمسار
         res = await API.put(`/api/services/${editingService._id}`, data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         setServices(services.map((s) => (s._id === editingService._id ? res.data : s)));
       } else {
-        // FIX: إضافة '/api' للمسار
         res = await API.post('/api/services', data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
@@ -130,9 +117,7 @@ const Services = () => {
 
       handleCloseModal();
     } catch (error) {
-      console.error(error);
-      // NOTE: تم استبدال alert بـ console.error لتحسين تجربة المستخدم
-      console.error('Failed to save service. Please check the fields.');
+      console.error('Failed to save service. Please check the fields.', error);
     }
   };
 
@@ -155,6 +140,7 @@ const Services = () => {
               <TableCell>Category</TableCell>
               <TableCell>API Service ID</TableCell>
               <TableCell>Price</TableCell>
+              <TableCell>Cost Price</TableCell>
               <TableCell>Stock</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -166,8 +152,9 @@ const Services = () => {
                 <TableCell>{service.name}</TableCell>
                 <TableCell>{service.description}</TableCell>
                 <TableCell>{service.category}</TableCell>
-                <TableCell>{service.apiServiceId}</TableCell>
+                <TableCell>{service.apiServiceId || ''}</TableCell>
                 <TableCell>{service.price !== undefined ? `$${service.price}` : ''}</TableCell>
+                <TableCell>{service.costPrice !== undefined ? `$${service.costPrice}` : ''}</TableCell>
                 <TableCell>{service.stock !== undefined ? service.stock : ''}</TableCell>
                 <TableCell>
                   <IconButton color="primary" onClick={() => handleOpenModal(service)}><Edit /></IconButton>
@@ -185,8 +172,9 @@ const Services = () => {
           <TextField margin="dense" label="Name" name="name" fullWidth value={formData.name} onChange={handleChange} />
           <TextField margin="dense" label="Description" name="description" fullWidth value={formData.description} onChange={handleChange} />
           <TextField margin="dense" label="Category" name="category" fullWidth value={formData.category} onChange={handleChange} />
-          <TextField margin="dense" label="API Service ID" name="apiServiceId" fullWidth value={formData.apiServiceId} onChange={handleChange} />
+          <TextField margin="dense" label="API Service ID (optional)" name="apiServiceId" fullWidth value={formData.apiServiceId} onChange={handleChange} />
           <TextField margin="dense" label="Price (optional)" name="price" type="number" fullWidth value={formData.price} onChange={handleChange} />
+          <TextField margin="dense" label="Cost Price (optional)" name="costPrice" type="number" fullWidth value={formData.costPrice} onChange={handleChange} />
           <TextField margin="dense" label="Stock (optional)" name="stock" type="number" fullWidth value={formData.stock} onChange={handleChange} />
           <input type="file" name="imageFile" accept="image/*" onChange={handleChange} style={{ marginTop: '15px' }} />
         </DialogContent>
