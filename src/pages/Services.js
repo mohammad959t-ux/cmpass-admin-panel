@@ -1,9 +1,22 @@
 // src/pages/Services.js
 import React, { useEffect, useState } from 'react';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  IconButton, Typography, Button, Dialog, DialogTitle, DialogContent,
-  DialogActions, TextField, Box
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Typography,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Box
 } from '@mui/material';
 import { Delete, Edit, Add } from '@mui/icons-material';
 import API from '../api/axios';
@@ -19,7 +32,7 @@ const Services = () => {
     subCategory: '', // ✅ حقل جديد
     apiServiceId: '',
     price: '',
-    costPrice: '',
+    costPrice: '', // ✅ حقل جديد
     stock: '',
     imageFile: null,
   });
@@ -49,7 +62,7 @@ const Services = () => {
     }
   };
 
-  // فتح/إغلاق المودال
+  // فتح/إغلاق مودال
   const handleOpenModal = (service = null) => {
     if (service) {
       setEditingService(service);
@@ -57,13 +70,10 @@ const Services = () => {
         name: service.name,
         description: service.description,
         category: service.category,
-<<<<<<< Updated upstream
-=======
         subCategory: service.subCategory || '', // ✅ تعبئة الحقل الجديد
->>>>>>> Stashed changes
         apiServiceId: service.apiServiceId || '',
         price: service.price || '',
-        costPrice: service.costPrice || '',
+        costPrice: service.costPrice || '', // ✅ تعبئة الحقل الجديد
         stock: service.stock || '',
         imageFile: null,
       });
@@ -76,7 +86,7 @@ const Services = () => {
         subCategory: '', // ✅ حقل جديد
         apiServiceId: '',
         price: '',
-        costPrice: '',
+        costPrice: '', // ✅ حقل جديد
         stock: '',
         imageFile: null,
       });
@@ -102,13 +112,10 @@ const Services = () => {
       data.append('name', formData.name);
       data.append('description', formData.description);
       data.append('category', formData.category);
-<<<<<<< Updated upstream
-=======
       data.append('subCategory', formData.subCategory); // ✅ إرسال الحقل الجديد
->>>>>>> Stashed changes
       if (formData.apiServiceId) data.append('apiServiceId', formData.apiServiceId);
       if (formData.price !== '') data.append('price', formData.price);
-      if (formData.costPrice !== '') data.append('costPrice', formData.costPrice);
+      if (formData.costPrice !== '') data.append('costPrice', formData.costPrice); // ✅ إرسال الحقل الجديد
       if (formData.stock !== '') data.append('stock', formData.stock);
       if (formData.imageFile) data.append('image', formData.imageFile);
 
@@ -151,7 +158,7 @@ const Services = () => {
               <TableCell>Sub Category</TableCell> {/* ✅ عمود جديد */}
               <TableCell>API Service ID</TableCell>
               <TableCell>Price</TableCell>
-              <TableCell>Cost Price</TableCell>
+              <TableCell>Cost Price</TableCell> {/* ✅ عمود جديد */}
               <TableCell>Stock</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -163,13 +170,10 @@ const Services = () => {
                 <TableCell>{service.name}</TableCell>
                 <TableCell>{service.description}</TableCell>
                 <TableCell>{service.category}</TableCell>
-<<<<<<< Updated upstream
-=======
                 <TableCell>{service.subCategory || ''}</TableCell> {/* ✅ عرض الحقل الجديد */}
->>>>>>> Stashed changes
                 <TableCell>{service.apiServiceId || ''}</TableCell>
                 <TableCell>{service.price !== undefined ? `$${service.price}` : ''}</TableCell>
-                <TableCell>{service.costPrice !== undefined ? `$${service.costPrice}` : ''}</TableCell>
+                <TableCell>{service.costPrice !== undefined ? `$${service.costPrice}` : ''}</TableCell> {/* ✅ عرض الحقل الجديد */}
                 <TableCell>{service.stock !== undefined ? service.stock : ''}</TableCell>
                 <TableCell>
                   <IconButton color="primary" onClick={() => handleOpenModal(service)}><Edit /></IconButton>
@@ -187,13 +191,10 @@ const Services = () => {
           <TextField margin="dense" label="Name" name="name" fullWidth value={formData.name} onChange={handleChange} />
           <TextField margin="dense" label="Description" name="description" fullWidth value={formData.description} onChange={handleChange} />
           <TextField margin="dense" label="Category" name="category" fullWidth value={formData.category} onChange={handleChange} />
-<<<<<<< Updated upstream
-=======
           <TextField margin="dense" label="Sub Category" name="subCategory" fullWidth value={formData.subCategory} onChange={handleChange} /> {/* ✅ حقل جديد */}
->>>>>>> Stashed changes
           <TextField margin="dense" label="API Service ID (optional)" name="apiServiceId" fullWidth value={formData.apiServiceId} onChange={handleChange} />
           <TextField margin="dense" label="Price (optional)" name="price" type="number" fullWidth value={formData.price} onChange={handleChange} />
-          <TextField margin="dense" label="Cost Price (optional)" name="costPrice" type="number" fullWidth value={formData.costPrice} onChange={handleChange} />
+          <TextField margin="dense" label="Cost Price (optional)" name="costPrice" type="number" fullWidth value={formData.costPrice} onChange={handleChange} /> {/* ✅ حقل جديد */}
           <TextField margin="dense" label="Stock (optional)" name="stock" type="number" fullWidth value={formData.stock} onChange={handleChange} />
           <input type="file" name="imageFile" accept="image/*" onChange={handleChange} style={{ marginTop: '15px' }} />
         </DialogContent>
