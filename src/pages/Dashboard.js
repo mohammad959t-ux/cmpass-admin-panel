@@ -15,16 +15,13 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-  Button
+  MenuItem
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { fetchTotalIncome } from './analyticsService';
 import StatCard from '../components/StatCard';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState('');
@@ -56,7 +53,7 @@ const Dashboard = () => {
       expenseType: selectedExpenseType
     });
   }, [startDate, endDate, selectedCurrency, selectedExpenseType]);
-
+  
   const currencySymbol = (currency) => {
     switch (currency) {
       case 'IQD':
@@ -67,11 +64,6 @@ const Dashboard = () => {
       default:
         return '$';
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    navigate('/login');
   };
 
   if (loading || !stats) {
@@ -146,7 +138,6 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Stats cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard title="Total Income" value={`${currencySymbol(selectedCurrency)}${stats.totalIncome}`} />
@@ -161,8 +152,7 @@ const Dashboard = () => {
           <StatCard title="Completed Orders" value={stats.numberOfCompletedOrders} />
         </Grid>
       </Grid>
-
-      {/* Line Chart */}
+      
       <Paper sx={{ p: 2, mb: 4 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>Income, Profit, and Expenses (Weekly)</Typography>
         {lineData.length > 0 ? (
@@ -183,7 +173,6 @@ const Dashboard = () => {
         )}
       </Paper>
 
-      {/* Recent Orders */}
       <Paper sx={{ p: 2 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>Recent Orders</Typography>
         <TableContainer>
@@ -219,13 +208,6 @@ const Dashboard = () => {
           </Table>
         </TableContainer>
       </Paper>
-
-      {/* Logout button at the bottom */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Button variant="contained" color="error" onClick={handleLogout}>
-          Logout
-        </Button>
-      </Box>
     </Box>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Box, List, ListItemButton, ListItemIcon, ListItemText, Switch } from '@mui/material';
+import { Box, List, ListItemButton, ListItemIcon, ListItemText, Switch, Button } from '@mui/material';
 import { 
   Dashboard, 
   People, 
@@ -9,7 +9,8 @@ import {
   BarChart, 
   Brightness4, 
   Brightness7,
-  AttachMoney // أيقونة جديدة للمصاريف
+  AttachMoney, // أيقونة جديدة للمصاريف
+  Logout // أيقونة تسجيل الخروج
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ThemeContext } from '../contexts/ThemeContext'; // استيراد السياق
@@ -27,10 +28,8 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // استخدام useContext للحصول على الوضع الحالي ووظيفة التبديل من السياق
   const { mode, toggleMode } = useContext(ThemeContext);
 
-  // المصفوفة المحدثة مع "Expenses"
   const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/' },
     { text: 'Users', icon: <People />, path: '/users' },
@@ -41,8 +40,13 @@ const Sidebar = () => {
     { text: 'Analytics', icon: <BarChart />, path: '/analytics' },
   ];
 
-  // لون ثابت للأيقونات في الوضع الداكن
-  const iconColorDark = '#43C6E8'; // تم تغيير اللون إلى بداية التدرج
+  const iconColorDark = '#43C6E8';
+
+  // دالة تسجيل الخروج
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    navigate('/login');
+  };
 
   return (
     <Box
@@ -63,7 +67,7 @@ const Sidebar = () => {
       }}
     >
       {/* قسم الشعار */}
-      <Box sx={{ p: 4, textAlign: 'center' }}> {/* تم تعديل قيمة p (padding) لزيادة المسافة */}
+      <Box sx={{ p: 4, textAlign: 'center' }}>
         <img 
           src={getLogo(mode)} 
           alt="Admin Panel Logo" 
@@ -79,7 +83,6 @@ const Sidebar = () => {
             selected={location.pathname === item.path}
             onClick={() => navigate(item.path)}
           >
-            {/* تطبيق اللون الثابت على الأيقونة في الوضع الداكن */}
             <ListItemIcon sx={{ color: mode === 'dark' ? iconColorDark : 'inherit' }}>
               {item.icon}
             </ListItemIcon>
@@ -93,6 +96,19 @@ const Sidebar = () => {
         <Brightness7 color="action" />
         <Switch checked={mode === 'dark'} onChange={toggleMode} />
         <Brightness4 color="action" />
+      </Box>
+
+      {/* زر تسجيل الخروج */}
+      <Box sx={{ p: 2, textAlign: 'center' }}>
+        <Button
+          variant="contained"
+          color="error"
+          startIcon={<Logout />}
+          onClick={handleLogout}
+          fullWidth
+        >
+          Logout
+        </Button>
       </Box>
     </Box>
   );
