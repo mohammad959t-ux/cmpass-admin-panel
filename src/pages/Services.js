@@ -1,28 +1,10 @@
 // src/pages/Services.js
 import React, { useEffect, useState } from 'react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Typography,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Box,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Pagination,
-  CircularProgress
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Paper, IconButton, Typography, Button, Dialog, DialogTitle, DialogContent,
+  DialogActions, TextField, Box, Select, MenuItem, FormControl, InputLabel,
+  Pagination, CircularProgress
 } from '@mui/material';
 import { Delete, Edit, Add } from '@mui/icons-material';
 import API from '../api/axios';
@@ -40,15 +22,8 @@ const Services = () => {
   const [openModal, setOpenModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    category: '',
-    subCategory: '',
-    apiServiceId: '',
-    price: '',
-    costPrice: '',
-    stock: '',
-    imageFile: null,
+    name: '', description: '', mainCategory: '', subCategory: '',
+    apiServiceId: '', price: '', costPrice: '', stock: '', imageFile: null
   });
 
   const fetchServices = async (pageNumber = 1) => {
@@ -62,8 +37,9 @@ const Services = () => {
         subCategory: subCategoryFilter,
       };
       const res = await API.get('/api/services', { params });
-      setServices(res.data.services);
-      setTotalPages(Math.ceil(res.data.totalCount / PAGE_LIMIT));
+
+      setServices(res.data.items);          // تم تعديلها
+      setTotalPages(res.data.pages);        // تم تعديلها
       setPage(pageNumber);
     } catch (error) {
       console.error(error);
@@ -90,9 +66,9 @@ const Services = () => {
     if (service) {
       setEditingService(service);
       setFormData({
-        name: service.name,
-        description: service.description,
-        category: service.category,
+        name: service.name || '',
+        description: service.description || '',
+        mainCategory: service.mainCategory || '',
         subCategory: service.subCategory || '',
         apiServiceId: service.apiServiceId || '',
         price: service.price || '',
@@ -103,15 +79,8 @@ const Services = () => {
     } else {
       setEditingService(null);
       setFormData({
-        name: '',
-        description: '',
-        category: '',
-        subCategory: '',
-        apiServiceId: '',
-        price: '',
-        costPrice: '',
-        stock: '',
-        imageFile: null,
+        name: '', description: '', mainCategory: '', subCategory: '',
+        apiServiceId: '', price: '', costPrice: '', stock: '', imageFile: null
       });
     }
     setOpenModal(true);
@@ -122,9 +91,9 @@ const Services = () => {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'imageFile') {
-      setFormData((prev) => ({ ...prev, imageFile: files[0] }));
+      setFormData(prev => ({ ...prev, imageFile: files[0] }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
@@ -133,7 +102,7 @@ const Services = () => {
       const data = new FormData();
       data.append('name', formData.name);
       data.append('description', formData.description);
-      data.append('category', formData.category);
+      data.append('mainCategory', formData.mainCategory);
       data.append('subCategory', formData.subCategory);
       if (formData.apiServiceId) data.append('apiServiceId', formData.apiServiceId);
       if (formData.price !== '') data.append('price', formData.price);
@@ -143,11 +112,11 @@ const Services = () => {
 
       if (editingService) {
         await API.put(`/api/services/${editingService._id}`, data, {
-          headers: { 'Content-Type': 'multipart/form-data' },
+          headers: { 'Content-Type': 'multipart/form-data' }
         });
       } else {
         await API.post('/api/services', data, {
-          headers: { 'Content-Type': 'multipart/form-data' },
+          headers: { 'Content-Type': 'multipart/form-data' }
         });
       }
 
@@ -175,13 +144,13 @@ const Services = () => {
         <TextField
           label="Search"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={e => setSearchTerm(e.target.value)}
         />
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Main Category</InputLabel>
           <Select
             value={mainCategoryFilter}
-            onChange={(e) => setMainCategoryFilter(e.target.value)}
+            onChange={e => setMainCategoryFilter(e.target.value)}
             label="Main Category"
           >
             <MenuItem value="">All</MenuItem>
@@ -193,7 +162,7 @@ const Services = () => {
           <InputLabel>Sub Category</InputLabel>
           <Select
             value={subCategoryFilter}
-            onChange={(e) => setSubCategoryFilter(e.target.value)}
+            onChange={e => setSubCategoryFilter(e.target.value)}
             label="Sub Category"
           >
             <MenuItem value="">All</MenuItem>
@@ -224,7 +193,7 @@ const Services = () => {
                 <TableCell>Image</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Description</TableCell>
-                <TableCell>Category</TableCell>
+                <TableCell>Main Category</TableCell>
                 <TableCell>Sub Category</TableCell>
                 <TableCell>API Service ID</TableCell>
                 <TableCell>Price</TableCell>
@@ -234,7 +203,7 @@ const Services = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {services.map((service) => (
+              {services.map(service => (
                 <TableRow key={service._id}>
                   <TableCell>
                     {service.imageUrl ? (
@@ -243,12 +212,12 @@ const Services = () => {
                   </TableCell>
                   <TableCell>{service.name}</TableCell>
                   <TableCell>{service.description}</TableCell>
-                  <TableCell>{service.category}</TableCell>
-                  <TableCell>{service.subCategory || ''}</TableCell>
-                  <TableCell>{service.apiServiceId || ''}</TableCell>
-                  <TableCell>{service.price !== undefined ? `$${service.price}` : ''}</TableCell>
-                  <TableCell>{service.costPrice !== undefined ? `$${service.costPrice}` : ''}</TableCell>
-                  <TableCell>{service.stock !== undefined ? service.stock : ''}</TableCell>
+                  <TableCell>{service.mainCategory || '-'}</TableCell>
+                  <TableCell>{service.subCategory || '-'}</TableCell>
+                  <TableCell>{service.apiServiceId || '-'}</TableCell>
+                  <TableCell>{service.price != null ? `$${service.price}` : '-'}</TableCell>
+                  <TableCell>{service.costPrice != null ? `$${service.costPrice}` : '-'}</TableCell>
+                  <TableCell>{service.stock != null ? service.stock : '-'}</TableCell>
                   <TableCell>
                     <IconButton color="primary" onClick={() => handleOpenModal(service)}><Edit /></IconButton>
                     <IconButton color="error" onClick={() => handleDelete(service._id)}><Delete /></IconButton>
@@ -269,7 +238,7 @@ const Services = () => {
         <DialogContent>
           <TextField margin="dense" label="Name" name="name" fullWidth value={formData.name} onChange={handleChange} />
           <TextField margin="dense" label="Description" name="description" fullWidth value={formData.description} onChange={handleChange} />
-          <TextField margin="dense" label="Category" name="category" fullWidth value={formData.category} onChange={handleChange} />
+          <TextField margin="dense" label="Main Category" name="mainCategory" fullWidth value={formData.mainCategory} onChange={handleChange} />
           <TextField margin="dense" label="Sub Category" name="subCategory" fullWidth value={formData.subCategory} onChange={handleChange} />
           <TextField margin="dense" label="API Service ID (optional)" name="apiServiceId" fullWidth value={formData.apiServiceId} onChange={handleChange} />
           <TextField margin="dense" label="Price (optional)" name="price" type="number" fullWidth value={formData.price} onChange={handleChange} />
