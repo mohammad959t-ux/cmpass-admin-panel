@@ -6,7 +6,7 @@ import {
   DialogActions, TextField, Box, Select, MenuItem, FormControl, InputLabel,
   Pagination, CircularProgress
 } from '@mui/material';
-import { Delete, Edit, Add } from '@mui/icons-material';
+import { Delete, Edit, Add, Refresh, DeleteForever } from '@mui/icons-material';
 import API from '../api/axios';
 
 const PAGE_LIMIT = 50;
@@ -16,6 +16,7 @@ const Services = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [mainCategoryFilter, setMainCategoryFilter] = useState('');
   const [subCategoryFilter, setSubCategoryFilter] = useState('');
@@ -37,9 +38,8 @@ const Services = () => {
         subCategory: subCategoryFilter,
       };
       const res = await API.get('/api/services', { params });
-
-      setServices(res.data.items);          // تم تعديلها
-      setTotalPages(res.data.pages);        // تم تعديلها
+      setServices(res.data.items);
+      setTotalPages(res.data.pages);
       setPage(pageNumber);
     } catch (error) {
       console.error(error);
@@ -59,6 +59,37 @@ const Services = () => {
       fetchServices(page);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  // ==========================
+  // حذف جميع الخدمات
+  const handleDeleteAll = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL services?')) return;
+    try {
+      setSyncing(true);
+      await API.delete('/api/services/all'); // استخدام endpoint الجديد
+      setServices([]);
+      setTotalPages(1);
+      setPage(1);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // ==========================
+  // جلب جميع الخدمات الجديدة من API
+  const handleSyncServices = async () => {
+    try {
+      setSyncing(true);
+      await API.post('/api/services/sync'); // endpoint الجديد
+      fetchServices(1);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -135,9 +166,17 @@ const Services = () => {
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h4">Services</Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={() => handleOpenModal()}>
-          Add Service
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button variant="contained" color="error" startIcon={<DeleteForever />} onClick={handleDeleteAll} disabled={syncing}>
+            Delete All
+          </Button>
+          <Button variant="contained" color="secondary" startIcon={<Refresh />} onClick={handleSyncServices} disabled={syncing}>
+            Sync Services
+          </Button>
+          <Button variant="contained" startIcon={<Add />} onClick={() => handleOpenModal()}>
+            Add Service
+          </Button>
+        </Box>
       </Box>
 
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
@@ -181,7 +220,7 @@ const Services = () => {
         </FormControl>
       </Box>
 
-      {loading ? (
+      {(loading || syncing) ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
           <CircularProgress />
         </Box>
