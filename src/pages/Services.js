@@ -22,16 +22,18 @@ import {
   FormControl,
   InputLabel,
   Pagination,
+  CircularProgress
 } from '@mui/material';
 import { Delete, Edit, Add } from '@mui/icons-material';
 import API from '../api/axios';
 
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 50;
 
 const Services = () => {
   const [services, setServices] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [mainCategoryFilter, setMainCategoryFilter] = useState('');
   const [subCategoryFilter, setSubCategoryFilter] = useState('');
@@ -51,6 +53,7 @@ const Services = () => {
 
   const fetchServices = async (pageNumber = 1) => {
     try {
+      setLoading(true);
       const params = {
         page: pageNumber,
         limit: PAGE_LIMIT,
@@ -64,6 +67,8 @@ const Services = () => {
       setPage(pageNumber);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -207,47 +212,53 @@ const Services = () => {
         </FormControl>
       </Box>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Image</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Sub Category</TableCell>
-              <TableCell>API Service ID</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Cost Price</TableCell>
-              <TableCell>Stock</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {services.map((service) => (
-              <TableRow key={service._id}>
-                <TableCell>
-                  {service.imageUrl ? (
-                    <img loading="lazy" src={service.imageUrl} alt={service.name} width={50} height={50} />
-                  ) : 'No Image'}
-                </TableCell>
-                <TableCell>{service.name}</TableCell>
-                <TableCell>{service.description}</TableCell>
-                <TableCell>{service.category}</TableCell>
-                <TableCell>{service.subCategory || ''}</TableCell>
-                <TableCell>{service.apiServiceId || ''}</TableCell>
-                <TableCell>{service.price !== undefined ? `$${service.price}` : ''}</TableCell>
-                <TableCell>{service.costPrice !== undefined ? `$${service.costPrice}` : ''}</TableCell>
-                <TableCell>{service.stock !== undefined ? service.stock : ''}</TableCell>
-                <TableCell>
-                  <IconButton color="primary" onClick={() => handleOpenModal(service)}><Edit /></IconButton>
-                  <IconButton color="error" onClick={() => handleDelete(service._id)}><Delete /></IconButton>
-                </TableCell>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Image</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Category</TableCell>
+                <TableCell>Sub Category</TableCell>
+                <TableCell>API Service ID</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Cost Price</TableCell>
+                <TableCell>Stock</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {services.map((service) => (
+                <TableRow key={service._id}>
+                  <TableCell>
+                    {service.imageUrl ? (
+                      <img loading="lazy" src={service.imageUrl} alt={service.name} width={50} height={50} />
+                    ) : 'No Image'}
+                  </TableCell>
+                  <TableCell>{service.name}</TableCell>
+                  <TableCell>{service.description}</TableCell>
+                  <TableCell>{service.category}</TableCell>
+                  <TableCell>{service.subCategory || ''}</TableCell>
+                  <TableCell>{service.apiServiceId || ''}</TableCell>
+                  <TableCell>{service.price !== undefined ? `$${service.price}` : ''}</TableCell>
+                  <TableCell>{service.costPrice !== undefined ? `$${service.costPrice}` : ''}</TableCell>
+                  <TableCell>{service.stock !== undefined ? service.stock : ''}</TableCell>
+                  <TableCell>
+                    <IconButton color="primary" onClick={() => handleOpenModal(service)}><Edit /></IconButton>
+                    <IconButton color="error" onClick={() => handleDelete(service._id)}><Delete /></IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
         <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
