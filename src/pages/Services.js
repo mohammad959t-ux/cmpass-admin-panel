@@ -7,11 +7,13 @@ import {
   Pagination, CircularProgress
 } from '@mui/material';
 import { Delete, Edit, Add, Refresh, DeleteForever } from '@mui/icons-material';
+import { useSnackbar } from 'notistack';
 import API from '../api/axios';
 
 const PAGE_LIMIT = 50;
 
 const Services = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const [services, setServices] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -43,6 +45,7 @@ const Services = () => {
       setPage(pageNumber);
     } catch (error) {
       console.error(error);
+      enqueueSnackbar('Failed to fetch services', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -56,38 +59,40 @@ const Services = () => {
     if (!window.confirm('Are you sure you want to delete this service?')) return;
     try {
       await API.delete(`/api/services/${id}`);
+      enqueueSnackbar('Service deleted successfully', { variant: 'success' });
       fetchServices(page);
     } catch (error) {
       console.error(error);
+      enqueueSnackbar('Failed to delete service', { variant: 'error' });
     }
   };
 
-  // ==========================
-  // حذف جميع الخدمات
   const handleDeleteAll = async () => {
     if (!window.confirm('Are you sure you want to delete ALL services?')) return;
     try {
       setSyncing(true);
-      await API.delete('/api/services/all'); // استخدام endpoint الجديد
+      await API.delete('/api/services/all');
       setServices([]);
       setTotalPages(1);
       setPage(1);
+      enqueueSnackbar('All services deleted successfully', { variant: 'success' });
     } catch (error) {
       console.error(error);
+      enqueueSnackbar('Failed to delete all services', { variant: 'error' });
     } finally {
       setSyncing(false);
     }
   };
 
-  // ==========================
-  // جلب جميع الخدمات الجديدة من API
   const handleSyncServices = async () => {
     try {
       setSyncing(true);
-      await API.post('/api/services/sync'); // endpoint الجديد
+      await API.post('/api/services/sync');
+      enqueueSnackbar('Services synced successfully', { variant: 'success' });
       fetchServices(1);
     } catch (error) {
       console.error(error);
+      enqueueSnackbar('Failed to sync services', { variant: 'error' });
     } finally {
       setSyncing(false);
     }
@@ -145,16 +150,19 @@ const Services = () => {
         await API.put(`/api/services/${editingService._id}`, data, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
+        enqueueSnackbar('Service updated successfully', { variant: 'success' });
       } else {
         await API.post('/api/services', data, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
+        enqueueSnackbar('Service added successfully', { variant: 'success' });
       }
 
       fetchServices(page);
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save service. Please check the fields.', error);
+      enqueueSnackbar('Failed to save service', { variant: 'error' });
     }
   };
 
