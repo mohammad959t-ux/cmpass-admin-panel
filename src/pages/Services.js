@@ -16,53 +16,71 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Box
+  Box,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Pagination,
 } from '@mui/material';
 import { Delete, Edit, Add } from '@mui/icons-material';
 import API from '../api/axios';
 
+const PAGE_LIMIT = 20;
+
 const Services = () => {
   const [services, setServices] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [mainCategoryFilter, setMainCategoryFilter] = useState('');
+  const [subCategoryFilter, setSubCategoryFilter] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     category: '',
-    subCategory: '', // ✅ حقل جديد
+    subCategory: '',
     apiServiceId: '',
     price: '',
-    costPrice: '', // ✅ حقل جديد
+    costPrice: '',
     stock: '',
     imageFile: null,
   });
 
-  // جلب الخدمات
-  const fetchServices = async () => {
+  const fetchServices = async (pageNumber = 1) => {
     try {
-      const res = await API.get('/api/services');
-      setServices(res.data);
+      const params = {
+        page: pageNumber,
+        limit: PAGE_LIMIT,
+        search: searchTerm,
+        mainCategory: mainCategoryFilter,
+        subCategory: subCategoryFilter,
+      };
+      const res = await API.get('/api/services', { params });
+      setServices(res.data.services);
+      setTotalPages(Math.ceil(res.data.totalCount / PAGE_LIMIT));
+      setPage(pageNumber);
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    fetchServices();
-  }, []);
+    fetchServices(1);
+  }, [searchTerm, mainCategoryFilter, subCategoryFilter]);
 
-  // حذف خدمة
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this service?')) return;
     try {
       await API.delete(`/api/services/${id}`);
-      setServices(services.filter((s) => s._id !== id));
+      fetchServices(page);
     } catch (error) {
       console.error(error);
     }
   };
 
-  // فتح/إغلاق مودال
   const handleOpenModal = (service = null) => {
     if (service) {
       setEditingService(service);
@@ -70,10 +88,10 @@ const Services = () => {
         name: service.name,
         description: service.description,
         category: service.category,
-        subCategory: service.subCategory || '', // ✅ تعبئة الحقل الجديد
+        subCategory: service.subCategory || '',
         apiServiceId: service.apiServiceId || '',
         price: service.price || '',
-        costPrice: service.costPrice || '', // ✅ تعبئة الحقل الجديد
+        costPrice: service.costPrice || '',
         stock: service.stock || '',
         imageFile: null,
       });
@@ -83,10 +101,10 @@ const Services = () => {
         name: '',
         description: '',
         category: '',
-        subCategory: '', // ✅ حقل جديد
+        subCategory: '',
         apiServiceId: '',
         price: '',
-        costPrice: '', // ✅ حقل جديد
+        costPrice: '',
         stock: '',
         imageFile: null,
       });
@@ -105,37 +123,38 @@ const Services = () => {
     }
   };
 
-  // إضافة/تعديل الخدمة
   const handleSubmit = async () => {
     try {
       const data = new FormData();
       data.append('name', formData.name);
       data.append('description', formData.description);
       data.append('category', formData.category);
-      data.append('subCategory', formData.subCategory); // ✅ إرسال الحقل الجديد
+      data.append('subCategory', formData.subCategory);
       if (formData.apiServiceId) data.append('apiServiceId', formData.apiServiceId);
       if (formData.price !== '') data.append('price', formData.price);
-      if (formData.costPrice !== '') data.append('costPrice', formData.costPrice); // ✅ إرسال الحقل الجديد
+      if (formData.costPrice !== '') data.append('costPrice', formData.costPrice);
       if (formData.stock !== '') data.append('stock', formData.stock);
       if (formData.imageFile) data.append('image', formData.imageFile);
 
-      let res;
       if (editingService) {
-        res = await API.put(`/api/services/${editingService._id}`, data, {
+        await API.put(`/api/services/${editingService._id}`, data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-        setServices(services.map((s) => (s._id === editingService._id ? res.data : s)));
       } else {
-        res = await API.post('/api/services', data, {
+        await API.post('/api/services', data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-        setServices([...services, res.data]);
       }
 
+      fetchServices(page);
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save service. Please check the fields.', error);
     }
+  };
+
+  const handlePageChange = (event, value) => {
+    fetchServices(value);
   };
 
   return (
@@ -147,6 +166,47 @@ const Services = () => {
         </Button>
       </Box>
 
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <TextField
+          label="Search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <FormControl sx={{ minWidth: 150 }}>
+          <InputLabel>Main Category</InputLabel>
+          <Select
+            value={mainCategoryFilter}
+            onChange={(e) => setMainCategoryFilter(e.target.value)}
+            label="Main Category"
+          >
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="زيادة التفاعل">زيادة التفاعل</MenuItem>
+            <MenuItem value="خدمات رقمية">خدمات رقمية</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl sx={{ minWidth: 150 }}>
+          <InputLabel>Sub Category</InputLabel>
+          <Select
+            value={subCategoryFilter}
+            onChange={(e) => setSubCategoryFilter(e.target.value)}
+            label="Sub Category"
+          >
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="انستغرام">انستغرام</MenuItem>
+            <MenuItem value="فيسبوك">فيسبوك</MenuItem>
+            <MenuItem value="يوتيوب">يوتيوب</MenuItem>
+            <MenuItem value="تويتر">تويتر</MenuItem>
+            <MenuItem value="تيك توك">تيك توك</MenuItem>
+            <MenuItem value="لينكدإن">لينكدإن</MenuItem>
+            <MenuItem value="تيليجرام">تيليجرام</MenuItem>
+            <MenuItem value="سبوتيفاي">سبوتيفاي</MenuItem>
+            <MenuItem value="ساوندكلاود">ساوندكلاود</MenuItem>
+            <MenuItem value="زيارات مواقع">زيارات مواقع</MenuItem>
+            <MenuItem value="أخرى">أخرى</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -155,10 +215,10 @@ const Services = () => {
               <TableCell>Name</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Category</TableCell>
-              <TableCell>Sub Category</TableCell> {/* ✅ عمود جديد */}
+              <TableCell>Sub Category</TableCell>
               <TableCell>API Service ID</TableCell>
               <TableCell>Price</TableCell>
-              <TableCell>Cost Price</TableCell> {/* ✅ عمود جديد */}
+              <TableCell>Cost Price</TableCell>
               <TableCell>Stock</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -166,14 +226,18 @@ const Services = () => {
           <TableBody>
             {services.map((service) => (
               <TableRow key={service._id}>
-                <TableCell>{service.imageUrl ? <img src={service.imageUrl} alt={service.name} width={50} height={50} /> : 'No Image'}</TableCell>
+                <TableCell>
+                  {service.imageUrl ? (
+                    <img loading="lazy" src={service.imageUrl} alt={service.name} width={50} height={50} />
+                  ) : 'No Image'}
+                </TableCell>
                 <TableCell>{service.name}</TableCell>
                 <TableCell>{service.description}</TableCell>
                 <TableCell>{service.category}</TableCell>
-                <TableCell>{service.subCategory || ''}</TableCell> {/* ✅ عرض الحقل الجديد */}
+                <TableCell>{service.subCategory || ''}</TableCell>
                 <TableCell>{service.apiServiceId || ''}</TableCell>
                 <TableCell>{service.price !== undefined ? `$${service.price}` : ''}</TableCell>
-                <TableCell>{service.costPrice !== undefined ? `$${service.costPrice}` : ''}</TableCell> {/* ✅ عرض الحقل الجديد */}
+                <TableCell>{service.costPrice !== undefined ? `$${service.costPrice}` : ''}</TableCell>
                 <TableCell>{service.stock !== undefined ? service.stock : ''}</TableCell>
                 <TableCell>
                   <IconButton color="primary" onClick={() => handleOpenModal(service)}><Edit /></IconButton>
@@ -185,16 +249,20 @@ const Services = () => {
         </Table>
       </TableContainer>
 
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+        <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
+      </Box>
+
       <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
         <DialogTitle>{editingService ? 'Edit Service' : 'Add Service'}</DialogTitle>
         <DialogContent>
           <TextField margin="dense" label="Name" name="name" fullWidth value={formData.name} onChange={handleChange} />
           <TextField margin="dense" label="Description" name="description" fullWidth value={formData.description} onChange={handleChange} />
           <TextField margin="dense" label="Category" name="category" fullWidth value={formData.category} onChange={handleChange} />
-          <TextField margin="dense" label="Sub Category" name="subCategory" fullWidth value={formData.subCategory} onChange={handleChange} /> {/* ✅ حقل جديد */}
+          <TextField margin="dense" label="Sub Category" name="subCategory" fullWidth value={formData.subCategory} onChange={handleChange} />
           <TextField margin="dense" label="API Service ID (optional)" name="apiServiceId" fullWidth value={formData.apiServiceId} onChange={handleChange} />
           <TextField margin="dense" label="Price (optional)" name="price" type="number" fullWidth value={formData.price} onChange={handleChange} />
-          <TextField margin="dense" label="Cost Price (optional)" name="costPrice" type="number" fullWidth value={formData.costPrice} onChange={handleChange} /> {/* ✅ حقل جديد */}
+          <TextField margin="dense" label="Cost Price (optional)" name="costPrice" type="number" fullWidth value={formData.costPrice} onChange={handleChange} />
           <TextField margin="dense" label="Stock (optional)" name="stock" type="number" fullWidth value={formData.stock} onChange={handleChange} />
           <input type="file" name="imageFile" accept="image/*" onChange={handleChange} style={{ marginTop: '15px' }} />
         </DialogContent>
