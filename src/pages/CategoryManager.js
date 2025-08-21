@@ -28,7 +28,7 @@ const CategoryManager = () => {
   const fetchCategories = async (pageNumber = 1) => {
     try {
       setLoading(true);
-      const res = await API.get('/category', {
+      const res = await API.get('/api/category', {
         params: { page: pageNumber, limit: PAGE_LIMIT }
       });
       const data = res.data;
@@ -49,7 +49,11 @@ const CategoryManager = () => {
   const handleOpenModal = (category = null) => {
     if (category) {
       setEditingCategory(category);
-      setFormData({ name: category.name, imageFile: null, previewUrl: category.imageUrl ? `https://compass-backend-87n1.onrender.com${category.imageUrl}` : '' });
+      setFormData({ 
+        name: category.name, 
+        imageFile: null, 
+        previewUrl: category.imageUrl ? `https://compass-backend-87n1.onrender.com${category.imageUrl}` : '' 
+      });
     } else {
       setEditingCategory(null);
       setFormData({ name: '', imageFile: null, previewUrl: '' });
@@ -89,12 +93,12 @@ const CategoryManager = () => {
       if (formData.imageFile) data.append('image', formData.imageFile);
 
       if (editingCategory) {
-        await API.put(`/category/${editingCategory._id}`, data, {
+        await API.put(`/api/category/${editingCategory._id}`, data, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         enqueueSnackbar('Category updated successfully', { variant: 'success' });
       } else {
-        await API.post('/category', data, {
+        await API.post('/api/category', data, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         enqueueSnackbar('Category added successfully', { variant: 'success' });
@@ -112,7 +116,7 @@ const CategoryManager = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this category?')) return;
     try {
-      await API.delete(`/category/${id}`);
+      await API.delete(`/api/category/${id}`);
       enqueueSnackbar('Category deleted successfully', { variant: 'success' });
       fetchCategories(page);
     } catch (err) {
