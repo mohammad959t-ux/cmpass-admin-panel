@@ -4,7 +4,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, IconButton, Typography, Button, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, Box, Select, MenuItem, FormControl, InputLabel,
-  Pagination, CircularProgress, LinearProgress
+  Pagination, CircularProgress
 } from '@mui/material';
 import { Delete, Edit, Add, Refresh, DeleteForever } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
@@ -19,7 +19,6 @@ const Services = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [mainCategoryFilter, setMainCategoryFilter] = useState('');
   const [subCategoryFilter, setSubCategoryFilter] = useState('');
@@ -59,12 +58,15 @@ const Services = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this service?')) return;
     try {
+      setSyncing(true);
       await API.delete(`/api/services/${id}`);
       enqueueSnackbar('Service deleted successfully', { variant: 'success' });
       fetchServices(page);
     } catch (error) {
       console.error(error);
       enqueueSnackbar('Failed to delete service', { variant: 'error' });
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -72,14 +74,7 @@ const Services = () => {
     if (!window.confirm('Are you sure you want to delete ALL services?')) return;
     try {
       setSyncing(true);
-      setProgress(0);
-      const res = await API.delete('/api/services'); // REST endpoint بدون "/delete-all"
-      // افترضنا السيرفر يرسل totalDeleted و totalServices
-      if (res.data.totalDeleted && res.data.totalServices) {
-        setProgress((res.data.totalDeleted / res.data.totalServices) * 100);
-      } else {
-        setProgress(100);
-      }
+      await API.delete('/api/services'); // تم تعديل المسار هنا
       setServices([]);
       setTotalPages(1);
       setPage(1);
@@ -89,21 +84,13 @@ const Services = () => {
       enqueueSnackbar('Failed to delete all services', { variant: 'error' });
     } finally {
       setSyncing(false);
-      setProgress(0);
     }
   };
 
   const handleSyncServices = async () => {
     try {
       setSyncing(true);
-      setProgress(0);
-      // يمكن تعديل السيرفر لإرسال progress أو عدد الخدمات المعالجة
-      const res = await API.post('/api/services/sync');
-      if (res.data.totalSynced && res.data.totalServices) {
-        setProgress((res.data.totalSynced / res.data.totalServices) * 100);
-      } else {
-        setProgress(100);
-      }
+      await API.post('/api/services/sync');
       enqueueSnackbar('Services synced successfully', { variant: 'success' });
       fetchServices(1);
     } catch (error) {
@@ -111,7 +98,6 @@ const Services = () => {
       enqueueSnackbar('Failed to sync services', { variant: 'error' });
     } finally {
       setSyncing(false);
-      setProgress(0);
     }
   };
 
@@ -204,13 +190,6 @@ const Services = () => {
         </Box>
       </Box>
 
-      {(syncing && progress > 0) && (
-        <Box sx={{ width: '100%', mb: 2 }}>
-          <LinearProgress variant="determinate" value={progress} />
-          <Typography variant="body2" align="center">{Math.round(progress)}% Completed</Typography>
-        </Box>
-      )}
-
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <TextField
           label="Search"
@@ -252,7 +231,7 @@ const Services = () => {
         </FormControl>
       </Box>
 
-      {(loading || syncing) && progress === 0 ? (
+      {(loading || syncing) ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
           <CircularProgress />
         </Box>
