@@ -21,7 +21,8 @@ const CategoryManager = () => {
 
   const [openModal, setOpenModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [formData, setFormData] = useState({ name: '', imageFile: null });
+  const [formData, setFormData] = useState({ name: '', imageFile: null, previewUrl: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   // Fetch categories
   const fetchCategories = async (pageNumber = 1) => {
@@ -48,10 +49,10 @@ const CategoryManager = () => {
   const handleOpenModal = (category = null) => {
     if (category) {
       setEditingCategory(category);
-      setFormData({ name: category.name, imageFile: null });
+      setFormData({ name: category.name, imageFile: null, previewUrl: category.imageUrl ? `https://compass-backend-87n1.onrender.com${category.imageUrl}` : '' });
     } else {
       setEditingCategory(null);
-      setFormData({ name: '', imageFile: null });
+      setFormData({ name: '', imageFile: null, previewUrl: '' });
     }
     setOpenModal(true);
   };
@@ -60,17 +61,32 @@ const CategoryManager = () => {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === 'image') setFormData(prev => ({ ...prev, imageFile: files[0] }));
-    else setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'image') {
+      const file = files[0];
+      if (file) {
+        setFormData(prev => ({
+          ...prev,
+          imageFile: file,
+          previewUrl: URL.createObjectURL(file)
+        }));
+        enqueueSnackbar('Image selected successfully', { variant: 'success' });
+      } else {
+        setFormData(prev => ({ ...prev, imageFile: null, previewUrl: '' }));
+        enqueueSnackbar('Image selection canceled', { variant: 'info' });
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async () => {
     if (!formData.name) return enqueueSnackbar('Please enter a category name', { variant: 'warning' });
 
     try {
+      setSubmitting(true);
       const data = new FormData();
       data.append('name', formData.name);
-      if (formData.imageFile) data.append('image', formData.imageFile); // يجب أن يطابق Multer
+      if (formData.imageFile) data.append('image', formData.imageFile);
 
       if (editingCategory) {
         await API.put(`/category/${editingCategory._id}`, data, {
@@ -88,6 +104,8 @@ const CategoryManager = () => {
     } catch (err) {
       console.error(err);
       enqueueSnackbar('Failed to save category', { variant: 'error' });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -176,11 +194,22 @@ const CategoryManager = () => {
             Upload Image
             <input type="file" hidden name="image" onChange={handleChange} />
           </Button>
+
+          {formData.previewUrl && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2">Image Preview:</Typography>
+              <img
+                src={formData.previewUrl}
+                alt="Preview"
+                style={{ width: 100, height: 100, objectFit: 'cover', marginTop: 5, borderRadius: 4 }}
+              />
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseModal}>Cancel</Button>
-          <Button variant="contained" onClick={handleSubmit}>
-            {editingCategory ? 'Update' : 'Add'}
+          <Button variant="contained" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? <CircularProgress size={24} /> : editingCategory ? 'Update' : 'Add'}
           </Button>
         </DialogActions>
       </Dialog>
