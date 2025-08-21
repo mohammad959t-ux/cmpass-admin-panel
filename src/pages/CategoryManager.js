@@ -1,4 +1,4 @@
-// src/pages/Category.js
+// src/pages/CategoryManager.js
 import React, { useEffect, useState } from 'react';
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer,
@@ -23,20 +23,20 @@ const CategoryManager = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({ name: '', imageFile: null });
 
-  // تحميل التصنيفات
+  // Fetch categories
   const fetchCategories = async (pageNumber = 1) => {
     try {
       setLoading(true);
       const res = await API.get('/category', {
         params: { page: pageNumber, limit: PAGE_LIMIT }
       });
-      const data = res.data; // افترضنا backend يرسل مصفوفة
+      const data = res.data;
       setCategories(data);
       setTotalPages(Math.ceil(data.length / PAGE_LIMIT));
       setPage(pageNumber);
     } catch (err) {
       console.error(err);
-      enqueueSnackbar('فشل في جلب التصنيفات', { variant: 'error' });
+      enqueueSnackbar('Failed to fetch categories', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ const CategoryManager = () => {
 
   useEffect(() => { fetchCategories(); }, []);
 
-  // فتح نافذة إضافة/تعديل
+  // Open Add/Edit modal
   const handleOpenModal = (category = null) => {
     if (category) {
       setEditingCategory(category);
@@ -65,7 +65,7 @@ const CategoryManager = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.name) return enqueueSnackbar('أدخل اسم التصنيف', { variant: 'warning' });
+    if (!formData.name) return enqueueSnackbar('Please enter a category name', { variant: 'warning' });
 
     try {
       const data = new FormData();
@@ -74,28 +74,28 @@ const CategoryManager = () => {
 
       if (editingCategory) {
         await API.put(`/category/${editingCategory._id}`, data);
-        enqueueSnackbar('تم تعديل التصنيف بنجاح', { variant: 'success' });
+        enqueueSnackbar('Category updated successfully', { variant: 'success' });
       } else {
         await API.post('/category', data);
-        enqueueSnackbar('تم إضافة التصنيف بنجاح', { variant: 'success' });
+        enqueueSnackbar('Category added successfully', { variant: 'success' });
       }
       fetchCategories(page);
       handleCloseModal();
     } catch (err) {
       console.error(err);
-      enqueueSnackbar('فشل في حفظ التصنيف', { variant: 'error' });
+      enqueueSnackbar('Failed to save category', { variant: 'error' });
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('هل تريد حذف هذا التصنيف؟')) return;
+    if (!window.confirm('Are you sure you want to delete this category?')) return;
     try {
       await API.delete(`/category/${id}`);
-      enqueueSnackbar('تم حذف التصنيف', { variant: 'success' });
+      enqueueSnackbar('Category deleted successfully', { variant: 'success' });
       fetchCategories(page);
     } catch (err) {
       console.error(err);
-      enqueueSnackbar('فشل في حذف التصنيف', { variant: 'error' });
+      enqueueSnackbar('Failed to delete category', { variant: 'error' });
     }
   };
 
@@ -104,8 +104,8 @@ const CategoryManager = () => {
   return (
     <Box sx={{ p: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">إدارة التصنيفات</Typography>
-        <Button variant="contained" onClick={() => handleOpenModal()}>إضافة تصنيف</Button>
+        <Typography variant="h4">Category Management</Typography>
+        <Button variant="contained" onClick={() => handleOpenModal()}>Add Category</Button>
       </Box>
 
       {loading ? (
@@ -118,9 +118,9 @@ const CategoryManager = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>الصورة</TableCell>
-                  <TableCell>الاسم</TableCell>
-                  <TableCell>الإجراءات</TableCell>
+                  <TableCell>Image</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -153,11 +153,11 @@ const CategoryManager = () => {
       )}
 
       <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
-        <DialogTitle>{editingCategory ? 'تعديل التصنيف' : 'إضافة تصنيف'}</DialogTitle>
+        <DialogTitle>{editingCategory ? 'Edit Category' : 'Add Category'}</DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
-            label="اسم التصنيف"
+            label="Category Name"
             name="name"
             fullWidth
             value={formData.name}
@@ -169,14 +169,14 @@ const CategoryManager = () => {
             startIcon={<AddPhotoAlternate />}
             sx={{ mt: 2 }}
           >
-            رفع صورة
+            Upload Image
             <input type="file" hidden name="imageFile" onChange={handleChange} />
           </Button>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseModal}>إلغاء</Button>
+          <Button onClick={handleCloseModal}>Cancel</Button>
           <Button variant="contained" onClick={handleSubmit}>
-            {editingCategory ? 'تعديل' : 'إضافة'}
+            {editingCategory ? 'Update' : 'Add'}
           </Button>
         </DialogActions>
       </Dialog>
