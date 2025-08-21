@@ -14,7 +14,7 @@ import Banners from './pages/Banners';
 import Analytics from './pages/Analytics';
 import Login from './pages/Login';
 import Expenses from './pages/Expenses';
-import CategoryManager from './pages/Category';
+import CategoryManager from './pages/CategoryManager';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/AdminLayout';
