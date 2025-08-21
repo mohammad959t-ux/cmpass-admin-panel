@@ -14,6 +14,7 @@ import Banners from './pages/Banners';
 import Analytics from './pages/Analytics';
 import Login from './pages/Login';
 import Expenses from './pages/Expenses';
+import CategoryManager from './pages/Category';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/AdminLayout';
@@ -37,6 +38,8 @@ const App = () => {
             <Route path="/banners" element={<Banners />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/expenses" element={<Expenses />} />
+            <Route path="/categories" element={<CategoryManager />} />
+
           </Route>
         </Route>
 
