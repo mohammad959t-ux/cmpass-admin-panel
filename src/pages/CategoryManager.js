@@ -60,7 +60,7 @@ const CategoryManager = () => {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === 'imageFile') setFormData(prev => ({ ...prev, imageFile: files[0] }));
+    if (name === 'image') setFormData(prev => ({ ...prev, imageFile: files[0] }));
     else setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -70,13 +70,17 @@ const CategoryManager = () => {
     try {
       const data = new FormData();
       data.append('name', formData.name);
-      if (formData.imageFile) data.append('image', formData.imageFile);
+      if (formData.imageFile) data.append('image', formData.imageFile); // يجب أن يطابق Multer
 
       if (editingCategory) {
-        await API.put(`/category/${editingCategory._id}`, data);
+        await API.put(`/category/${editingCategory._id}`, data, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         enqueueSnackbar('Category updated successfully', { variant: 'success' });
       } else {
-        await API.post('/category', data);
+        await API.post('/category', data, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         enqueueSnackbar('Category added successfully', { variant: 'success' });
       }
       fetchCategories(page);
@@ -170,7 +174,7 @@ const CategoryManager = () => {
             sx={{ mt: 2 }}
           >
             Upload Image
-            <input type="file" hidden name="imageFile" onChange={handleChange} />
+            <input type="file" hidden name="image" onChange={handleChange} />
           </Button>
         </DialogContent>
         <DialogActions>
