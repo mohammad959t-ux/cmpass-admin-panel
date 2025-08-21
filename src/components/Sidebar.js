@@ -9,7 +9,7 @@ import {
   BarChart, 
   Brightness4, 
   Brightness7,
-  AttachMoney, // أيقونة جديدة للمصاريف
+  AttachMoney, // أيقونة المصاريف
   Logout // أيقونة تسجيل الخروج
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -20,14 +20,11 @@ import logoLight from '../assets/logo-light.png';
 import logoDark from '../assets/logo-dark.png';
 
 // دالة لتغيير الشعار بناءً على الوضع
-const getLogo = (mode) => {
-  return mode === 'dark' ? logoDark : logoLight;
-};
+const getLogo = (mode) => (mode === 'dark' ? logoDark : logoLight);
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const { mode, toggleMode } = useContext(ThemeContext);
 
   const menuItems = [
@@ -38,6 +35,7 @@ const Sidebar = () => {
     { text: 'Expenses', icon: <AttachMoney />, path: '/expenses' },
     { text: 'Banners', icon: <Image />, path: '/banners' },
     { text: 'Analytics', icon: <BarChart />, path: '/analytics' },
+    { text: 'Categories', icon: <Image />, path: '/categories' }, // ← أضفنا إدارة التصنيفات
   ];
 
   const iconColorDark = '#43C6E8';
