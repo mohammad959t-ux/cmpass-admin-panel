@@ -58,15 +58,12 @@ const Services = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this service?')) return;
     try {
-      setSyncing(true);
       await API.delete(`/api/services/${id}`);
       enqueueSnackbar('Service deleted successfully', { variant: 'success' });
       fetchServices(page);
     } catch (error) {
       console.error(error);
       enqueueSnackbar('Failed to delete service', { variant: 'error' });
-    } finally {
-      setSyncing(false);
     }
   };
 
@@ -74,7 +71,7 @@ const Services = () => {
     if (!window.confirm('Are you sure you want to delete ALL services?')) return;
     try {
       setSyncing(true);
-      await API.delete('/api/services'); // تم تعديل المسار هنا
+      await API.delete('/api/services'); // ✅ المسار الصحيح
       setServices([]);
       setTotalPages(1);
       setPage(1);
