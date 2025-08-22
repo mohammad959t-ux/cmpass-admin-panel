@@ -40,7 +40,7 @@ const App = () => {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/categories" element={<CategoryManager />} />
-            <Route path="/receipts" element={<Receipts />} /> {/* ← إضافة الراوت */}
+            <Route path="/receipts" element={<Receipts />} /> 
           </Route>
         </Route>
 
