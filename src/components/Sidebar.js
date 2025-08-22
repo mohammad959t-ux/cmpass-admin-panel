@@ -10,6 +10,7 @@ import {
   Brightness4, 
   Brightness7,
   AttachMoney, // أيقونة المصاريف
+  ReceiptLong, // أيقونة الإيصالات
   Logout // أيقونة تسجيل الخروج
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -35,7 +36,8 @@ const Sidebar = () => {
     { text: 'Expenses', icon: <AttachMoney />, path: '/expenses' },
     { text: 'Banners', icon: <Image />, path: '/banners' },
     { text: 'Analytics', icon: <BarChart />, path: '/analytics' },
-    { text: 'Categories', icon: <Image />, path: '/categories' }, // ← أضفنا إدارة التصنيفات
+    { text: 'Categories', icon: <Image />, path: '/categories' }, 
+    { text: 'Receipts', icon: <ReceiptLong />, path: '/receipts' }, // ← أضفنا إدارة الإيصالات
   ];
 
   const iconColorDark = '#43C6E8';

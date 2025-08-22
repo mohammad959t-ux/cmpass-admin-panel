@@ -15,6 +15,7 @@ import Analytics from './pages/Analytics';
 import Login from './pages/Login';
 import Expenses from './pages/Expenses';
 import CategoryManager from './pages/CategoryManager';
+import Receipts from './pages/Receipts'; // ← إضافة صفحة الإيصالات
 
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/AdminLayout';
@@ -39,7 +40,7 @@ const App = () => {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/categories" element={<CategoryManager />} />
-
+            <Route path="/receipts" element={<Receipts />} /> {/* ← إضافة الراوت */}
           </Route>
         </Route>
 
