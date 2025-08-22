@@ -15,7 +15,8 @@ import Analytics from './pages/Analytics';
 import Login from './pages/Login';
 import Expenses from './pages/Expenses';
 import CategoryManager from './pages/CategoryManager';
-import Receipts from './pages/Receipts'; // ← إضافة صفحة الإيصالات
+import Receipts from './pages/Receipts';
+import ClientsManager from './pages/ClientsManager'; // <--- استيراد صفحة العملاء
 
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/AdminLayout';
@@ -25,7 +26,6 @@ const App = () => {
     // تغليف التطبيق بالكامل بـ AppThemeProvider
     <AppThemeProvider>
       <CssBaseline />
-      {/* تم إزالة مكون <Router> هنا، حيث يفترض أنه موجود في ملف index.js */}
       <Routes>
         <Route path="/login" element={<Login />} />
 
@@ -40,7 +40,8 @@ const App = () => {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/categories" element={<CategoryManager />} />
-            <Route path="/receipts" element={<Receipts />} /> 
+            <Route path="/receipts" element={<Receipts />} />
+            <Route path="/clients" element={<ClientsManager />} /> {/* <--- إضافة مسار العملاء */}
           </Route>
         </Route>
 

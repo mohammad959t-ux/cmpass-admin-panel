@@ -9,18 +9,17 @@ import {
   BarChart, 
   Brightness4, 
   Brightness7,
-  AttachMoney, // أيقونة المصاريف
-  ReceiptLong, // أيقونة الإيصالات
-  Logout // أيقونة تسجيل الخروج
+  AttachMoney,
+  ReceiptLong,
+  Logout,
+  Group
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ThemeContext } from '../contexts/ThemeContext'; // استيراد السياق
+import { ThemeContext } from '../contexts/ThemeContext';
 
-// استيراد الشعارات من مجلد assets
 import logoLight from '../assets/logo-light.png';
 import logoDark from '../assets/logo-dark.png';
 
-// دالة لتغيير الشعار بناءً على الوضع
 const getLogo = (mode) => (mode === 'dark' ? logoDark : logoLight);
 
 const Sidebar = () => {
@@ -37,12 +36,12 @@ const Sidebar = () => {
     { text: 'Banners', icon: <Image />, path: '/banners' },
     { text: 'Analytics', icon: <BarChart />, path: '/analytics' },
     { text: 'Categories', icon: <Image />, path: '/categories' }, 
-    { text: 'Receipts', icon: <ReceiptLong />, path: '/receipts' }, // ← أضفنا إدارة الإيصالات
+    { text: 'Receipts', icon: <ReceiptLong />, path: '/receipts' },
+    { text: 'Clients', icon: <Group />, path: '/clients' }, // <--- إضافة مسار العملاء
   ];
 
   const iconColorDark = '#43C6E8';
 
-  // دالة تسجيل الخروج
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     navigate('/login');
@@ -66,7 +65,6 @@ const Sidebar = () => {
         zIndex: 1000,
       }}
     >
-      {/* قسم الشعار */}
       <Box sx={{ p: 4, textAlign: 'center' }}>
         <img 
           src={getLogo(mode)} 
@@ -75,7 +73,6 @@ const Sidebar = () => {
         />
       </Box>
 
-      {/* قائمة عناصر القائمة */}
       <List>
         {menuItems.map(item => (
           <ListItemButton
@@ -91,14 +88,12 @@ const Sidebar = () => {
         ))}
       </List>
 
-      {/* زر التبديل بين الوضع المظلم والفاتح */}
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Brightness7 color="action" />
         <Switch checked={mode === 'dark'} onChange={toggleMode} />
         <Brightness4 color="action" />
       </Box>
 
-      {/* زر تسجيل الخروج */}
       <Box sx={{ p: 2, textAlign: 'center' }}>
         <Button
           variant="contained"

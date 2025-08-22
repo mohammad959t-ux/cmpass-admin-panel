@@ -71,7 +71,7 @@ const Services = () => {
     if (!window.confirm('Are you sure you want to delete ALL services?')) return;
     try {
       setSyncing(true);
-      await API.delete('/api/services'); // ✅ المسار الصحيح
+      await API.delete('/api/services/delete-all'); // ✅ المسار الصحيح
       setServices([]);
       setTotalPages(1);
       setPage(1);
