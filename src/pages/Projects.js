@@ -28,6 +28,9 @@ const Projects = () => {
     details: []
   });
   const [newDetail, setNewDetail] = useState('');
+  const [additionalImages, setAdditionalImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [saving, setSaving] = useState(false); // Loader عند الحفظ
 
   // جلب المشاريع
   const fetchProjects = async (pageNumber = 1) => {
@@ -60,9 +63,13 @@ const Projects = () => {
         coverImage: null,
         details: project.details || []
       });
+      setAdditionalImages([]);
+      setExistingImages(project.images || []);
     } else {
       setEditingProject(null);
       setFormData({ title: '', description: '', coverImage: null, details: [] });
+      setAdditionalImages([]);
+      setExistingImages([]);
     }
     setOpenModal(true);
   };
@@ -73,6 +80,8 @@ const Projects = () => {
     const { name, value, files } = e.target;
     if (name === 'coverImage') {
       setFormData(prev => ({ ...prev, coverImage: files[0] }));
+    } else if (name === 'additionalImages') {
+      setAdditionalImages([...files]);
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -93,12 +102,13 @@ const Projects = () => {
     });
   };
 
-  const handleRemoveImage = async (imageUrl) => {
+  const handleRemoveExistingImage = async (imageUrl) => {
     try {
       await API.delete(`/api/projects/${editingProject._id}/image`, { 
         data: { imageUrl } 
       });
-      enqueueSnackbar('Image removed', { variant: 'success' });
+      enqueueSnackbar('Image removed successfully', { variant: 'success' });
+      setExistingImages(prev => prev.filter(img => img !== imageUrl));
       fetchProjects(page);
     } catch (error) {
       enqueueSnackbar('Failed to remove image', { variant: 'error' });
@@ -107,14 +117,17 @@ const Projects = () => {
 
   const handleSubmit = async () => {
     try {
+      setSaving(true);
       const data = new FormData();
       data.append('title', formData.title);
       data.append('description', formData.description);
-      data.append('details', formData.details.join(',')); // إصلاح: إرسال كـ string مفصول بفواصل
+      data.append('details', formData.details.join(','));
       
       if (formData.coverImage) {
         data.append('coverImage', formData.coverImage);
       }
+
+      additionalImages.forEach(img => data.append('images', img));
 
       if (editingProject) {
         await API.put(`/api/projects/${editingProject._id}`, data, { 
@@ -133,6 +146,8 @@ const Projects = () => {
     } catch (error) {
       console.error(error);
       enqueueSnackbar('Failed to save project', { variant: 'error' });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -195,9 +210,7 @@ const Projects = () => {
                         height={50} 
                         style={{ objectFit: 'cover' }}
                       />
-                    ) : (
-                      'No Cover'
-                    )}
+                    ) : 'No Cover'}
                   </TableCell>
                   <TableCell>{proj.title}</TableCell>
                   <TableCell>{proj.description}</TableCell>
@@ -253,6 +266,7 @@ const Projects = () => {
             required
           />
 
+          {/* Cover Image */}
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle1" gutterBottom>
               Cover Image {editingProject ? '(اختر صورة جديدة لتحديثها)' : '(مطلوب)'}
@@ -277,6 +291,62 @@ const Projects = () => {
             )}
           </Box>
 
+          {/* Additional Images */}
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle1" gutterBottom>
+              Additional Images
+            </Typography>
+            <input
+              type="file"
+              name="additionalImages"
+              accept="image/*"
+              multiple
+              onChange={handleChange}
+            />
+
+            {/* الصور الجديدة */}
+            {additionalImages.length > 0 && (
+              <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                {additionalImages.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={URL.createObjectURL(img)}
+                    alt={`preview-${idx}`}
+                    width={80}
+                    height={80}
+                    style={{ objectFit: 'cover', borderRadius: 4 }}
+                  />
+                ))}
+              </Box>
+            )}
+
+            {/* الصور الحالية عند التعديل */}
+            {existingImages.length > 0 && (
+              <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                {existingImages.map((img, idx) => (
+                  <Box key={idx} sx={{ position: 'relative' }}>
+                    <img
+                      src={img}
+                      alt={`existing-${idx}`}
+                      width={80}
+                      height={80}
+                      style={{ objectFit: 'cover', borderRadius: 4 }}
+                    />
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleRemoveExistingImage(img)}
+                      sx={{ position: 'absolute', top: -8, right: -8, bgcolor: 'white' }}
+                    >
+                      ×
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Box>
+
+          {/* Details */}
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle1" gutterBottom>Details</Typography>
             <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
@@ -312,9 +382,9 @@ const Projects = () => {
           <Button 
             variant="contained" 
             onClick={handleSubmit}
-            disabled={!formData.title || !formData.description || (!editingProject && !formData.coverImage)}
+            disabled={!formData.title || !formData.description || (!editingProject && !formData.coverImage) || saving}
           >
-            {editingProject ? 'Update' : 'Add'}
+            {saving ? <CircularProgress size={24} /> : editingProject ? 'Update' : 'Add'}
           </Button>
         </DialogActions>
       </Dialog>
