@@ -12,7 +12,8 @@ import {
   AttachMoney,
   ReceiptLong,
   Logout,
-  Group
+  Group,
+  Folder
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ThemeContext } from '../contexts/ThemeContext';
@@ -31,13 +32,14 @@ const Sidebar = () => {
     { text: 'Dashboard', icon: <Dashboard />, path: '/' },
     { text: 'Users', icon: <People />, path: '/users' },
     { text: 'Services', icon: <Build />, path: '/services' },
+    { text: 'Projects', icon: <Folder />, path: '/projects' }, // <-- إضافة Projects
     { text: 'Orders', icon: <ShoppingCart />, path: '/orders' },
     { text: 'Expenses', icon: <AttachMoney />, path: '/expenses' },
     { text: 'Banners', icon: <Image />, path: '/banners' },
     { text: 'Analytics', icon: <BarChart />, path: '/analytics' },
     { text: 'Categories', icon: <Image />, path: '/categories' }, 
     { text: 'Receipts', icon: <ReceiptLong />, path: '/receipts' },
-    { text: 'Clients', icon: <Group />, path: '/clients' }, // <--- إضافة مسار العملاء
+    { text: 'Clients', icon: <Group />, path: '/clients' },
   ];
 
   const iconColorDark = '#43C6E8';
