@@ -25,8 +25,15 @@ const Services = () => {
   const [openModal, setOpenModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [formData, setFormData] = useState({
-    name: '', description: '', mainCategory: '', subCategory: '',
-    apiServiceId: '', price: '', costPrice: '', stock: '', imageFile: null
+    name: '', 
+    description: '', 
+    mainCategory: '', 
+    subCategory: '',
+    apiServiceId: '', 
+    price: '', 
+    costPrice: '', 
+    stock: '', 
+    imageFile: null
   });
 
   const fetchServices = async (pageNumber = 1) => {
@@ -71,7 +78,7 @@ const Services = () => {
     if (!window.confirm('Are you sure you want to delete ALL services?')) return;
     try {
       setSyncing(true);
-      await API.delete('/api/services/delete-all'); // ✅ المسار الصحيح
+      await API.delete('/api/services/delete-all');
       setServices([]);
       setTotalPages(1);
       setPage(1);
@@ -115,8 +122,15 @@ const Services = () => {
     } else {
       setEditingService(null);
       setFormData({
-        name: '', description: '', mainCategory: '', subCategory: '',
-        apiServiceId: '', price: '', costPrice: '', stock: '', imageFile: null
+        name: '', 
+        description: '', 
+        mainCategory: '', 
+        subCategory: '',
+        apiServiceId: '', 
+        price: '', 
+        costPrice: '', 
+        stock: '', 
+        imageFile: null
       });
     }
     setOpenModal(true);
@@ -170,18 +184,42 @@ const Services = () => {
     fetchServices(value);
   };
 
+  // التحقق من صحة البيانات
+  const isFormValid = () => {
+    return formData.name && 
+           formData.description && 
+           formData.mainCategory && 
+           formData.subCategory;
+  };
+
   return (
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h4">Services</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="contained" color="error" startIcon={<DeleteForever />} onClick={handleDeleteAll} disabled={syncing}>
+          <Button 
+            variant="contained" 
+            color="error" 
+            startIcon={<DeleteForever />} 
+            onClick={handleDeleteAll} 
+            disabled={syncing}
+          >
             Delete All
           </Button>
-          <Button variant="contained" color="secondary" startIcon={<Refresh />} onClick={handleSyncServices} disabled={syncing}>
+          <Button 
+            variant="contained" 
+            color="secondary" 
+            startIcon={<Refresh />} 
+            onClick={handleSyncServices} 
+            disabled={syncing}
+          >
             Sync Services
           </Button>
-          <Button variant="contained" startIcon={<Add />} onClick={() => handleOpenModal()}>
+          <Button 
+            variant="contained" 
+            startIcon={<Add />} 
+            onClick={() => handleOpenModal()}
+          >
             Add Service
           </Button>
         </Box>
@@ -254,8 +292,31 @@ const Services = () => {
                 <TableRow key={service._id}>
                   <TableCell>
                     {service.imageUrl ? (
-                      <img loading="lazy" src={service.imageUrl} alt={service.name} width={50} height={50} />
-                    ) : 'No Image'}
+                      <img 
+                        loading="lazy" 
+                        src={service.imageUrl} 
+                        alt={service.name} 
+                        width={50} 
+                        height={50} 
+                        style={{ objectFit: 'cover', borderRadius: '4px' }}
+                      />
+                    ) : (
+                      <Box 
+                        sx={{ 
+                          width: 50, 
+                          height: 50, 
+                          bgcolor: 'grey.200', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          borderRadius: '4px'
+                        }}
+                      >
+                        <Typography variant="caption" color="text.secondary">
+                          No Image
+                        </Typography>
+                      </Box>
+                    )}
                   </TableCell>
                   <TableCell>{service.name}</TableCell>
                   <TableCell>{service.description}</TableCell>
@@ -266,8 +327,12 @@ const Services = () => {
                   <TableCell>{service.costPrice != null ? `$${service.costPrice}` : '-'}</TableCell>
                   <TableCell>{service.stock != null ? service.stock : '-'}</TableCell>
                   <TableCell>
-                    <IconButton color="primary" onClick={() => handleOpenModal(service)}><Edit /></IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(service._id)}><Delete /></IconButton>
+                    <IconButton color="primary" onClick={() => handleOpenModal(service)}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton color="error" onClick={() => handleDelete(service._id)}>
+                      <Delete />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -277,25 +342,131 @@ const Services = () => {
       )}
 
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-        <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
+        <Pagination 
+          count={totalPages} 
+          page={page} 
+          onChange={handlePageChange} 
+          color="primary" 
+        />
       </Box>
 
       <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
-        <DialogTitle>{editingService ? 'Edit Service' : 'Add Service'}</DialogTitle>
+        <DialogTitle>
+          {editingService ? 'Edit Service' : 'Add Service'}
+        </DialogTitle>
         <DialogContent>
-          <TextField margin="dense" label="Name" name="name" fullWidth value={formData.name} onChange={handleChange} />
-          <TextField margin="dense" label="Description" name="description" fullWidth value={formData.description} onChange={handleChange} />
-          <TextField margin="dense" label="Main Category" name="mainCategory" fullWidth value={formData.mainCategory} onChange={handleChange} />
-          <TextField margin="dense" label="Sub Category" name="subCategory" fullWidth value={formData.subCategory} onChange={handleChange} />
-          <TextField margin="dense" label="API Service ID (optional)" name="apiServiceId" fullWidth value={formData.apiServiceId} onChange={handleChange} />
-          <TextField margin="dense" label="Price (optional)" name="price" type="number" fullWidth value={formData.price} onChange={handleChange} />
-          <TextField margin="dense" label="Cost Price (optional)" name="costPrice" type="number" fullWidth value={formData.costPrice} onChange={handleChange} />
-          <TextField margin="dense" label="Stock (optional)" name="stock" type="number" fullWidth value={formData.stock} onChange={handleChange} />
-          <input type="file" name="imageFile" accept="image/*" onChange={handleChange} style={{ marginTop: '15px' }} />
+          <TextField 
+            margin="dense" 
+            label="Name *" 
+            name="name" 
+            fullWidth 
+            value={formData.name} 
+            onChange={handleChange} 
+            required
+          />
+          <TextField 
+            margin="dense" 
+            label="Description *" 
+            name="description" 
+            fullWidth 
+            value={formData.description} 
+            onChange={handleChange} 
+            multiline
+            rows={3}
+            required
+          />
+          <TextField 
+            margin="dense" 
+            label="Main Category *" 
+            name="mainCategory" 
+            fullWidth 
+            value={formData.mainCategory} 
+            onChange={handleChange} 
+            required
+          />
+          <TextField 
+            margin="dense" 
+            label="Sub Category *" 
+            name="subCategory" 
+            fullWidth 
+            value={formData.subCategory} 
+            onChange={handleChange} 
+            required
+          />
+          <TextField 
+            margin="dense" 
+            label="API Service ID (optional)" 
+            name="apiServiceId" 
+            fullWidth 
+            value={formData.apiServiceId} 
+            onChange={handleChange} 
+          />
+          <TextField 
+            margin="dense" 
+            label="Price (optional)" 
+            name="price" 
+            type="number" 
+            fullWidth 
+            value={formData.price} 
+            onChange={handleChange} 
+          />
+          <TextField 
+            margin="dense" 
+            label="Cost Price (optional)" 
+            name="costPrice" 
+            type="number" 
+            fullWidth 
+            value={formData.costPrice} 
+            onChange={handleChange} 
+          />
+          <TextField 
+            margin="dense" 
+            label="Stock (optional)" 
+            name="stock" 
+            type="number" 
+            fullWidth 
+            value={formData.stock} 
+            onChange={handleChange} 
+          />
+          
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              {editingService ? 'Cover Image (اختر صورة جديدة لتحديثها)' : 'Cover Image (اختياري)'}
+            </Typography>
+            <input 
+              type="file" 
+              name="imageFile" 
+              accept="image/*" 
+              onChange={handleChange} 
+              style={{ marginTop: '8px' }} 
+            />
+            {editingService?.imageUrl && (
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="caption">الصورة الحالية:</Typography>
+                <img 
+                  src={editingService.imageUrl} 
+                  alt="Current image" 
+                  width={100} 
+                  height={100} 
+                  style={{ 
+                    objectFit: 'cover', 
+                    marginTop: '8px',
+                    borderRadius: '4px'
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseModal}>Cancel</Button>
-          <Button variant="contained" onClick={handleSubmit}>{editingService ? 'Update' : 'Add'}</Button>
+          <Button 
+            variant="contained" 
+            onClick={handleSubmit}
+            disabled={!isFormValid()}
+          >
+            {editingService ? 'Update' : 'Add'}
+          </Button>
         </DialogActions>
       </Dialog>
     </>
