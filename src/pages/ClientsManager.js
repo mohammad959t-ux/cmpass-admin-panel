@@ -1,14 +1,15 @@
 // src/pages/ClientsManager.js
 import React, { useEffect, useState } from 'react';
 import {
-  Box, Typography, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, IconButton, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, CircularProgress, Pagination
+  Box, Typography, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, Paper,
+  IconButton, Button, Dialog, DialogTitle,
+  DialogContent, DialogActions, TextField,
+  CircularProgress, Pagination
 } from '@mui/material';
 import { Delete, Edit, AddPhotoAlternate } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
-import API from '../api/axios'; // Assumed API instance with authentication
+import API from '../api/axios';
 
 const PAGE_LIMIT = 20;
 
@@ -20,18 +21,16 @@ const ClientsManager = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   const [openModal, setOpenModal] = useState(false);
-  const [editingClient, setEditingClient] = useState(null);
-  const [formData, setFormData] = useState({ name: '', logoFile: null, previewUrl: '' });
+  const [newClients, setNewClients] = useState([]); // [{file, name, previewUrl, status}]
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch clients from the backend
+  // Fetch clients
   const fetchClients = async (pageNumber = 1) => {
     try {
       setLoading(true);
-      const res = await API.get('/api/clients'); // Changed API endpoint
-      const data = res.data.clients; // Access the clients array from the response
+      const res = await API.get('/api/clients');
+      const data = res.data.clients || [];
       setClients(data);
-      // NOTE: Pagination logic for a small dataset
       setTotalPages(Math.ceil(data.length / PAGE_LIMIT));
       setPage(pageNumber);
     } catch (err) {
@@ -44,82 +43,81 @@ const ClientsManager = () => {
 
   useEffect(() => { fetchClients(); }, []);
 
-  // Open Add/Edit modal
-  const handleOpenModal = (client = null) => {
-    if (client) {
-      setEditingClient(client);
-      setFormData({ 
-        name: client.name, 
-        logoFile: null, 
-        previewUrl: client.logoUrl ? `https://compass-backend-87n1.onrender.com${client.logoUrl}` : '' 
-      });
-    } else {
-      setEditingClient(null);
-      setFormData({ name: '', logoFile: null, previewUrl: '' });
-    }
+  // Open modal
+  const handleOpenModal = () => {
+    setNewClients([]);
     setOpenModal(true);
   };
-
   const handleCloseModal = () => setOpenModal(false);
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'logo') {
-      const file = files[0];
-      if (file) {
-        setFormData(prev => ({
-          ...prev,
-          logoFile: file,
-          previewUrl: URL.createObjectURL(file)
-        }));
-        enqueueSnackbar('Logo selected successfully', { variant: 'success' });
-      } else {
-        setFormData(prev => ({ ...prev, logoFile: null, previewUrl: '' }));
-        enqueueSnackbar('Logo selection canceled', { variant: 'info' });
-      }
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
+  // Handle file selection (multiple logos)
+  const handleFilesChange = (e) => {
+    const files = Array.from(e.target.files);
+    const newFiles = files.map(f => ({
+      file: f,
+      name: '',
+      previewUrl: URL.createObjectURL(f),
+      status: 'pending' // pending, success, failed
+    }));
+    setNewClients(prev => [...prev, ...newFiles]);
+    enqueueSnackbar(`${files.length} file(s) selected`, { variant: 'info' });
   };
 
+  // Handle name input for each client
+  const handleNameChange = (index, value) => {
+    setNewClients(prev => {
+      const updated = [...prev];
+      updated[index].name = value;
+      return updated;
+    });
+  };
+
+  // Remove a client before upload
+  const handleRemoveClient = (index) => {
+    setNewClients(prev => {
+      const updated = [...prev];
+      updated.splice(index, 1);
+      return updated;
+    });
+  };
+
+  // Upload all clients
   const handleSubmit = async () => {
-    if (!formData.name) return enqueueSnackbar('Please enter a client name', { variant: 'warning' });
-    // For new clients, a logo is required
-    if (!editingClient && !formData.logoFile) {
-        return enqueueSnackbar('Please select a logo for the new client', { variant: 'warning' });
+    let hasEmptyName = newClients.some(c => !c.name.trim());
+    if (hasEmptyName) {
+      return enqueueSnackbar('Please fill in all client names', { variant: 'warning' });
     }
+    if (newClients.length === 0) return;
 
-    try {
-      setSubmitting(true);
-      const data = new FormData();
-      data.append('name', formData.name);
-      if (formData.logoFile) data.append('logo', formData.logoFile);
+    setSubmitting(true);
 
-      if (editingClient) {
-        await API.put(`/api/clients/${editingClient.id}`, data, { // Changed endpoint and ID field
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        enqueueSnackbar('Client updated successfully', { variant: 'success' });
-      } else {
-        await API.post('/api/clients', data, { // Changed endpoint
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        enqueueSnackbar('Client added successfully', { variant: 'success' });
+    const updatedClients = [...newClients];
+    for (let i = 0; i < newClients.length; i++) {
+      try {
+        const data = new FormData();
+        data.append('name', newClients[i].name);
+        data.append('logo', newClients[i].file);
+
+        await API.post('/api/clients', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+        updatedClients[i].status = 'success';
+      } catch (err) {
+        console.error(err);
+        updatedClients[i].status = 'failed';
       }
-      fetchClients(page);
-      handleCloseModal();
-    } catch (err) {
-      console.error(err);
-      enqueueSnackbar('Failed to save client', { variant: 'error' });
-    } finally {
-      setSubmitting(false);
+      setNewClients([...updatedClients]); // update UI after each upload
     }
+
+    enqueueSnackbar('Upload completed', { variant: 'success' });
+    fetchClients(page);
+    setSubmitting(false);
+    // Close modal if all successful
+    if (updatedClients.every(c => c.status === 'success')) handleCloseModal();
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this client?')) return;
     try {
-      await API.delete(`/api/clients/${id}`); // Changed endpoint
+      await API.delete(`/api/clients/${id}`);
       enqueueSnackbar('Client deleted successfully', { variant: 'success' });
       fetchClients(page);
     } catch (err) {
@@ -128,13 +126,13 @@ const ClientsManager = () => {
     }
   };
 
-  const handlePageChange = (event, value) => { fetchClients(value); };
+  const handlePageChange = (event, value) => fetchClients(value);
 
   return (
     <Box sx={{ p: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Clients Management</Typography>
-        <Button variant="contained" onClick={() => handleOpenModal()}>Add Client</Button>
+        <Button variant="contained" onClick={handleOpenModal}>Add Clients</Button>
       </Box>
 
       {loading ? (
@@ -154,20 +152,15 @@ const ClientsManager = () => {
               </TableHead>
               <TableBody>
                 {clients.map(client => (
-                  <TableRow key={client.id}>
+                  <TableRow key={client._id}>
                     <TableCell>
                       {client.logoUrl ? (
-                        <img
-                          src={`https://compass-backend-87n1.onrender.com${client.logoUrl}`}
-                          alt={client.name}
-                          width={50} height={50}
-                        />
+                        <img src={client.logoUrl} alt={client.name} width={50} height={50} style={{ objectFit: 'cover' }} />
                       ) : 'No Logo'}
                     </TableCell>
                     <TableCell>{client.name}</TableCell>
                     <TableCell>
-                      <IconButton color="primary" onClick={() => handleOpenModal(client)}><Edit /></IconButton>
-                      <IconButton color="error" onClick={() => handleDelete(client.id)}><Delete /></IconButton>
+                      <IconButton color="error" onClick={() => handleDelete(client._id)}><Delete /></IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -176,48 +169,43 @@ const ClientsManager = () => {
           </TableContainer>
 
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            {/* Pagination is kept for structural similarity, but its logic might change with a real backend */}
             <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
           </Box>
         </>
       )}
 
-      <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
-        <DialogTitle>{editingClient ? 'Edit Client' : 'Add Client'}</DialogTitle>
+      <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="md">
+        <DialogTitle>Add Multiple Clients</DialogTitle>
         <DialogContent>
-          <TextField
-            margin="dense"
-            label="Client Name"
-            name="name"
-            fullWidth
-            value={formData.name}
-            onChange={handleChange}
-          />
-          <Button
-            variant="contained"
-            component="label"
-            startIcon={<AddPhotoAlternate />}
-            sx={{ mt: 2 }}
-          >
-            Upload Logo
-            <input type="file" hidden name="logo" onChange={handleChange} />
+          <Button variant="contained" component="label" startIcon={<AddPhotoAlternate />}>
+            Select Logos
+            <input type="file" hidden multiple accept="image/*" onChange={handleFilesChange} />
           </Button>
 
-          {formData.previewUrl && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="body2">Logo Preview:</Typography>
-              <img
-                src={formData.previewUrl}
-                alt="Preview"
-                style={{ width: 100, height: 100, objectFit: 'cover', marginTop: 5, borderRadius: 4 }}
-              />
-            </Box>
-          )}
+          <Box sx={{ mt: 2 }}>
+            {newClients.map((client, idx) => (
+              <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
+                <img src={client.previewUrl} alt="preview" width={60} height={60} style={{ objectFit: 'cover', borderRadius: 4 }} />
+                <TextField
+                  label="Client Name"
+                  value={client.name}
+                  onChange={e => handleNameChange(idx, e.target.value)}
+                  fullWidth
+                  size="small"
+                />
+                <Typography variant="body2" sx={{ minWidth: 60 }}>
+                  {client.status === 'success' && '✅'}
+                  {client.status === 'failed' && '❌'}
+                </Typography>
+                <Button color="error" onClick={() => handleRemoveClient(idx)}>Remove</Button>
+              </Box>
+            ))}
+          </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseModal}>Cancel</Button>
-          <Button variant="contained" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? <CircularProgress size={24} /> : editingClient ? 'Update' : 'Add'}
+          <Button onClick={handleCloseModal} disabled={submitting}>Cancel</Button>
+          <Button variant="contained" onClick={handleSubmit} disabled={submitting || newClients.length === 0}>
+            {submitting ? <CircularProgress size={24} /> : 'Add Clients'}
           </Button>
         </DialogActions>
       </Dialog>
