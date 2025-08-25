@@ -33,7 +33,8 @@ const Services = () => {
     price: '', 
     costPrice: '', 
     stock: '', 
-    imageFile: null
+    imageFile: null,
+    pricingModel: 'per_unit' // ✅ جديد
   });
 
   const fetchServices = async (pageNumber = 1) => {
@@ -118,6 +119,7 @@ const Services = () => {
         costPrice: service.costPrice || '',
         stock: service.stock || '',
         imageFile: null,
+        pricingModel: service.pricingModel || 'per_unit', // ✅ جديد
       });
     } else {
       setEditingService(null);
@@ -130,7 +132,8 @@ const Services = () => {
         price: '', 
         costPrice: '', 
         stock: '', 
-        imageFile: null
+        imageFile: null,
+        pricingModel: 'per_unit' // ✅ جديد
       });
     }
     setOpenModal(true);
@@ -154,6 +157,7 @@ const Services = () => {
       data.append('description', formData.description);
       data.append('mainCategory', formData.mainCategory);
       data.append('subCategory', formData.subCategory);
+      data.append('pricingModel', formData.pricingModel); // ✅ جديد
       if (formData.apiServiceId) data.append('apiServiceId', formData.apiServiceId);
       if (formData.price !== '') data.append('price', formData.price);
       if (formData.costPrice !== '') data.append('costPrice', formData.costPrice);
@@ -184,7 +188,6 @@ const Services = () => {
     fetchServices(value);
   };
 
-  // التحقق من صحة البيانات
   const isFormValid = () => {
     return formData.name && 
            formData.description && 
@@ -280,6 +283,7 @@ const Services = () => {
                 <TableCell>Description</TableCell>
                 <TableCell>Main Category</TableCell>
                 <TableCell>Sub Category</TableCell>
+                <TableCell>Pricing Model</TableCell>{/* ✅ جديد */}
                 <TableCell>API Service ID</TableCell>
                 <TableCell>Price</TableCell>
                 <TableCell>Cost Price</TableCell>
@@ -322,6 +326,7 @@ const Services = () => {
                   <TableCell>{service.description}</TableCell>
                   <TableCell>{service.mainCategory || '-'}</TableCell>
                   <TableCell>{service.subCategory || '-'}</TableCell>
+                  <TableCell>{service.pricingModel || 'per_unit'}</TableCell>{/* ✅ */}
                   <TableCell>{service.apiServiceId || '-'}</TableCell>
                   <TableCell>{service.price != null ? `$${service.price}` : '-'}</TableCell>
                   <TableCell>{service.costPrice != null ? `$${service.costPrice}` : '-'}</TableCell>
@@ -393,14 +398,44 @@ const Services = () => {
             onChange={handleChange} 
             required
           />
-          <TextField 
-            margin="dense" 
-            label="API Service ID (optional)" 
-            name="apiServiceId" 
-            fullWidth 
-            value={formData.apiServiceId} 
-            onChange={handleChange} 
-          />
+
+          {/* ✅ اختيار نوع التسعير */}
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Pricing Model *</InputLabel>
+            <Select
+              name="pricingModel"
+              value={formData.pricingModel}
+              onChange={handleChange}
+              required
+            >
+              <MenuItem value="per_unit">Per Unit</MenuItem>
+              <MenuItem value="fixed">Fixed Price</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* ✅ الحقول الشرطية */}
+          {formData.pricingModel === 'per_unit' && (
+            <>
+              <TextField 
+                margin="dense" 
+                label="API Service ID (optional)" 
+                name="apiServiceId" 
+                fullWidth 
+                value={formData.apiServiceId} 
+                onChange={handleChange} 
+              />
+              <TextField 
+                margin="dense" 
+                label="Stock (optional)" 
+                name="stock" 
+                type="number" 
+                fullWidth 
+                value={formData.stock} 
+                onChange={handleChange} 
+              />
+            </>
+          )}
+
           <TextField 
             margin="dense" 
             label="Price (optional)" 
@@ -419,16 +454,7 @@ const Services = () => {
             value={formData.costPrice} 
             onChange={handleChange} 
           />
-          <TextField 
-            margin="dense" 
-            label="Stock (optional)" 
-            name="stock" 
-            type="number" 
-            fullWidth 
-            value={formData.stock} 
-            onChange={handleChange} 
-          />
-          
+
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle2" gutterBottom>
               {editingService ? 'Cover Image (اختر صورة جديدة لتحديثها)' : 'Cover Image (اختياري)'}
