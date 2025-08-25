@@ -19,26 +19,24 @@ import {
 } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { fetchTotalIncome } from './analyticsService';
-import API from '../api/axios'; // This is no longer needed for recent orders
 
 const Analytics = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [serviceName, setServiceName] = useState('');
+  const [mainCategory, setMainCategory] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
-  const [selectedExpenseType, setSelectedExpenseType] = useState('');
   const [currencies, setCurrencies] = useState(['USD', 'IQD', 'SYP']);
-  const [expenseTypes, setExpenseTypes] = useState(['Ads', 'Shipping', 'Other']);
-
+  const [services, setServices] = useState([]); // يمكن جلبها من API
+  const [categories, setCategories] = useState([]); // يمكن جلبها من API
 
   const fetchData = async (filters = {}) => {
     setLoading(true);
     try {
       const statsData = await fetchTotalIncome(filters);
       setStats(statsData);
-      // You can also dynamically fetch the list of currencies here if needed
-      // setCurrencies(statsData.availableCurrencies);
     } catch (error) {
       console.error(error);
       setStats(null);
@@ -51,30 +49,26 @@ const Analytics = () => {
     fetchData({
       startDate,
       endDate,
-      currency: selectedCurrency,
-      expenseType: selectedExpenseType
+      serviceName,
+      mainCategory,
+      currency: selectedCurrency
     });
-  }, [startDate, endDate, selectedCurrency, selectedExpenseType]);
+  }, [startDate, endDate, serviceName, mainCategory, selectedCurrency]);
 
   const currencySymbol = (currency) => {
     switch (currency) {
-      case 'IQD':
-        return 'د.ع';
-      case 'SYP':
-        return 'ل.س';
-      case 'USD':
-      default:
-        return '$';
+      case 'IQD': return 'د.ع';
+      case 'SYP': return 'ل.س';
+      default: return '$';
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (loading) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <CircularProgress />
+    </Box>
+  );
+
   if (!stats) return <Typography>Failed to load analytics. Please check your network or try again later.</Typography>;
 
   const lineData = stats.weeklyStats?.map((w, index) => ({
@@ -90,7 +84,7 @@ const Analytics = () => {
       
       {/* Filter controls */}
       <Grid container spacing={2} sx={{ mb: 3 }} alignItems="center">
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={2}>
           <TextField
             label="Start Date"
             type="date"
@@ -100,7 +94,7 @@ const Analytics = () => {
             InputLabelProps={{ shrink: true }}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={2}>
           <TextField
             label="End Date"
             type="date"
@@ -110,7 +104,33 @@ const Analytics = () => {
             InputLabelProps={{ shrink: true }}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={2}>
+          <FormControl fullWidth>
+            <InputLabel>Service</InputLabel>
+            <Select
+              value={serviceName}
+              label="Service"
+              onChange={(e) => setServiceName(e.target.value)}
+            >
+              <MenuItem value="">All</MenuItem>
+              {services.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6} md={2}>
+          <FormControl fullWidth>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={mainCategory}
+              label="Category"
+              onChange={(e) => setMainCategory(e.target.value)}
+            >
+              <MenuItem value="">All</MenuItem>
+              {categories.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6} md={2}>
           <FormControl fullWidth>
             <InputLabel>Currency</InputLabel>
             <Select
@@ -118,62 +138,33 @@ const Analytics = () => {
               label="Currency"
               onChange={(e) => setSelectedCurrency(e.target.value)}
             >
-              {currencies.map((currency) => (
-                <MenuItem key={currency} value={currency}>{currency}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <FormControl fullWidth>
-            <InputLabel>Expense Type</InputLabel>
-            <Select
-              value={selectedExpenseType}
-              label="Expense Type"
-              onChange={(e) => setSelectedExpenseType(e.target.value)}
-            >
-              <MenuItem value="">All</MenuItem>
-              {expenseTypes.map((type) => (
-                <MenuItem key={type} value={type}>{type}</MenuItem>
-              ))}
+              {currencies.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
             </Select>
           </FormControl>
         </Grid>
       </Grid>
 
+      {/* Summary Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={2.4}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Total Income</Typography>
-            <Typography variant="h5">{currencySymbol(selectedCurrency)}{stats.totalIncome}</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={2.4}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Total Profit</Typography>
-            <Typography variant="h5">{currencySymbol(selectedCurrency)}{stats.totalProfit}</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={2.4}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Total Expenses</Typography>
-            <Typography variant="h5">{currencySymbol(selectedCurrency)}{stats.totalExpenses}</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={2.4}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Net Profit</Typography>
-            <Typography variant="h5" color="secondary">{currencySymbol(selectedCurrency)}{stats.netProfit}</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={2.4}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Completed Orders</Typography>
-            <Typography variant="h5">{stats.numberOfCompletedOrders}</Typography>
-          </Paper>
-        </Grid>
+        {[
+          { label: 'Total Income', value: stats.totalIncome },
+          { label: 'Total Profit', value: stats.totalProfit },
+          { label: 'Total Expenses', value: stats.totalExpenses },
+          { label: 'Net Profit', value: stats.netProfit, color: 'secondary' },
+          { label: 'Completed Orders', value: stats.numberOfCompletedOrders }
+        ].map((card, idx) => (
+          <Grid key={idx} item xs={12} md={2.4}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="h6">{card.label}</Typography>
+              <Typography variant="h5" color={card.color || 'inherit'}>
+                {card.label.includes('Orders') ? card.value : `${currencySymbol(selectedCurrency)}${card.value}`}
+              </Typography>
+            </Paper>
+          </Grid>
+        ))}
       </Grid>
 
+      {/* Weekly Chart */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>Income, Profit, and Expenses (Weekly)</Typography>
         {lineData.length > 0 ? (
@@ -194,6 +185,7 @@ const Analytics = () => {
         )}
       </Paper>
 
+      {/* Recent Orders Table */}
       <Paper sx={{ p: 2 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>Recent Orders</Typography>
         <TableContainer>
@@ -209,13 +201,13 @@ const Analytics = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {stats?.orders?.length > 0 ? (
+              {stats.orders.length > 0 ? (
                 stats.orders.map(order => (
                   <TableRow key={order.id}>
                     <TableCell>{order.serviceName}</TableCell>
                     <TableCell>{currencySymbol(selectedCurrency)}{order.price}</TableCell>
                     <TableCell>{order.quantity}</TableCell>
-                    <TableCell>{currencySymbol(selectedCurrency)}{order.expenses.toFixed(2)}</TableCell>
+                    <TableCell>{currencySymbol(selectedCurrency)}{parseFloat(order.orderExpenses).toFixed(2)}</TableCell>
                     <TableCell>{order.status}</TableCell>
                     <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                   </TableRow>
